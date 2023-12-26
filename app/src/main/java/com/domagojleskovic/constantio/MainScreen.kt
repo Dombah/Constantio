@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,7 +65,8 @@ data class Post(
     @DrawableRes var image: Int,
     var description : String,
     val profile : Profile,
-    var comments : List<Comment>
+    var comments : List<Comment>,
+    var liked : Boolean = false
 )
 
 data class Comment(
@@ -236,12 +238,15 @@ fun Post(
             )
             Row{
                 Image(
-                    painter = painterResource(id = R.drawable.like),
+                    painter = painterResource(id = id),
                     contentDescription = null,
                     modifier = Modifier
                         .width(36.dp)
                         .height(36.dp)
                         .padding(top = 8.dp)
+                        .clickable {
+                            println("Like")
+                        }
                 )
                 Image(
                     painter = painterResource(id = R.drawable.add_comment),
@@ -250,6 +255,9 @@ fun Post(
                         .width(36.dp)
                         .height(36.dp)
                         .padding(top = 8.dp)
+                        .clickable {
+                            println("Add comment")
+                        }
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
