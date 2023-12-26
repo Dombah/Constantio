@@ -164,7 +164,7 @@ fun MainScreen() {
                 )
                 Post(
                     Post(image = R.drawable.profpic2,
-                        description = "Where my girls at?" ,
+                        description = "Where my girls at tonight?" ,
                         profile = listOfProfiles[1],
                         comments = listOf(
                             Comment(listOfProfiles[2], "Wow, so stunning!"),
@@ -234,6 +234,24 @@ fun Post(
                     .clip(RoundedCornerShape(roundedCornerShape.dp))
                     .border(1.dp, LightRed_Palette, RoundedCornerShape(roundedCornerShape.dp))
             )
+            Row{
+                Image(
+                    painter = painterResource(id = R.drawable.like),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(36.dp)
+                        .padding(top = 8.dp)
+                )
+                Image(
+                    painter = painterResource(id = R.drawable.add_comment),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(36.dp)
+                        .height(36.dp)
+                        .padding(top = 8.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Row (
                 modifier = Modifier.padding(start = 8.dp)
