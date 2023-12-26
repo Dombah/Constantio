@@ -31,8 +31,10 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -128,7 +130,7 @@ fun MainScreen() {
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.End
                     ){
-                        Text(text = "Constantio", fontSize = 36.sp,
+                        Text(text = "Constantio", fontSize = 48.sp,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)
@@ -152,10 +154,19 @@ fun MainScreen() {
                             StoryIcon(profile = profile)
                         }
                     }
-
                 }
             }
             Column {
+                Row (
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ){
+                    Text(text = "Activity", fontSize = 36.sp,
+                        fontFamily = FontFamily.Cursive,
+                        fontWeight = FontWeight.W700,
+                        color = Color.White
+                    )
+                }
                 Post(
                     Post(
                         image = R.drawable.profpic1,
@@ -198,13 +209,13 @@ fun StoryIcon(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(16.dp)
     ) {
         Image(painter = painterResource(id = profile.icon),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(70.dp)
+                .size(90.dp)
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
         )
@@ -216,6 +227,12 @@ fun Post(
     post: Post
 ) {
     val roundedCornerShape = 8
+    var imageLiked by remember { mutableStateOf(post.liked)}
+    val imageId = when (imageLiked){
+        true -> R.drawable.liked
+        false -> R.drawable.like
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -238,14 +255,14 @@ fun Post(
             )
             Row{
                 Image(
-                    painter = painterResource(id = id),
+                    painter = painterResource(id = imageId),
                     contentDescription = null,
                     modifier = Modifier
                         .width(36.dp)
                         .height(36.dp)
                         .padding(top = 8.dp)
                         .clickable {
-                            println("Like")
+                            imageLiked = !imageLiked
                         }
                 )
                 Image(
