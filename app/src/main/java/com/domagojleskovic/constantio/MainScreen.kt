@@ -60,6 +60,13 @@ data class Profile(
     }
 }
 
+data class Post(
+    @DrawableRes var image: Int,
+    var description : String,
+    val profile : Profile,
+    var comments : List<Comment>
+)
+
 data class Comment(
     val profile : Profile,
     var text : String
@@ -148,29 +155,33 @@ fun MainScreen() {
             }
             Column {
                 Post(
-                    image = R.drawable.profpic1,
-                    description = "Living life :D" ,
-                    profile = listOfProfiles[0],
-                    comments = listOf()
-                )
-                Post(
-                    image = R.drawable.profpic2,
-                    description = "Where my girls at?" ,
-                    profile = listOfProfiles[1],
-                    comments = listOf(
-                        Comment(listOfProfiles[2], "Wow, so stunning!"),
-                        Comment(listOfProfiles[3], "In love with you"),
-                        Comment(listOfProfiles[6], "When are we going to get out nails done?")
+                    Post(
+                        image = R.drawable.profpic1,
+                        description = "Living life :D" ,
+                        profile = listOfProfiles[0],
+                        comments = listOf()
                     )
                 )
                 Post(
-                    image = R.drawable.profpic3,
-                    description = "Where my girls at?" ,
-                    profile = listOfProfiles[2],
-                    comments = listOf(
-                        Comment(listOfProfiles[3], "Wow, so stunning!"),
-                        Comment(listOfProfiles[4], "In love with you"),
-                        Comment(listOfProfiles[5], "When are we going to get out nails done?")
+                    Post(image = R.drawable.profpic2,
+                        description = "Where my girls at?" ,
+                        profile = listOfProfiles[1],
+                        comments = listOf(
+                            Comment(listOfProfiles[2], "Wow, so stunning!"),
+                            Comment(listOfProfiles[3], "In love with you"),
+                            Comment(listOfProfiles[6], "When are we going to get out nails done?")
+                        ))
+
+                )
+                Post(
+                    Post(image = R.drawable.profpic3,
+                        description = "Where my girls at?" ,
+                        profile = listOfProfiles[2],
+                        comments = listOf(
+                            Comment(listOfProfiles[3], "Wow, so stunning!"),
+                            Comment(listOfProfiles[4], "In love with you"),
+                            Comment(listOfProfiles[5], "When are we going to get out nails done?"))
+
                     )
                 )
             }
@@ -200,10 +211,7 @@ fun StoryIcon(
 
 @Composable
 fun Post(
-    @DrawableRes image: Int,
-    description: String,
-    profile : Profile,
-    comments : List<Comment>
+    post: Post
 ) {
     val roundedCornerShape = 8
     Column(
@@ -217,7 +225,7 @@ fun Post(
             )
         ){
             Image(
-                painter = painterResource(id = image),
+                painter = painterResource(id = post.image),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -231,13 +239,13 @@ fun Post(
                 modifier = Modifier.padding(start = 8.dp)
             ){
                 Text(
-                    "@${profile.name}: $description",
+                    "@${post.profile}: ${post.description}",
                     color = Color.White,
                     softWrap = true,
                     fontSize = 24.sp)
             }
             Spacer(modifier = Modifier.height(16.dp))
-            for (comment in comments){
+            for (comment in post.comments){
                 Text(
                     text = "@${comment.profile}: $comment",
                     color = Color.White,
