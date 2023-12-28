@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
@@ -22,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -35,7 +37,16 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
 
 val listOfPictures : List<Int> = listOf(
-
+    R.drawable.pic1,
+    R.drawable.pic2,
+    R.drawable.pic3,
+    R.drawable.pic4,
+    R.drawable.pic5,
+    R.drawable.profpic1,
+    R.drawable.profpic2,
+    R.drawable.profpic3,
+    R.drawable.profpic4,
+    R.drawable.profpic5
 )
 
 @Preview(showBackground = true)
@@ -104,32 +115,46 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                             Column (
                                 modifier = Modifier.padding(16.dp)
                             ){
-
-                                Text(text = "Profile name", fontSize = 20.sp,
+                                Text(
+                                    text = "Profile Name", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
-                                    modifier = Modifier.padding(top = 16.dp))
-                                Text(text = "Posts: 0", fontSize = 20.sp,
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                                Text(
+                                    text = "Posts: ${listOfPictures.size}", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
-                                    modifier = Modifier.padding(top = 16.dp))
-                                Text(text = "Followers: 0", fontSize = 20.sp,
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                                Text(
+                                    text = "Followers: 0", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
-                                    modifier = Modifier.padding(top = 16.dp))
-                                Text(text = "Following: 0", fontSize = 20.sp,
+                                    modifier = Modifier.padding(8.dp)
+                                )
+                                Text(
+                                    text = "Following: 0", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
-                                    modifier = Modifier.padding(top = 16.dp))
+                                    modifier = Modifier.padding(8.dp)
+                                )
                             }
-
                         }
+
                     }
                 }
+            }
+            EasyGrid(nColumns = 3, items = listOfPictures) {
+                Image(
+                    painter = painterResource(id = it),
+                    contentDescription = null,
+                    modifier = Modifier.padding(2.dp)
+                )
             }
         }
     }
@@ -137,7 +162,7 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
 
 @Composable
 fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit){
-    Column(Modifier.padding(16.dp)){
+    Column(){
         for(i in items.indices step nColumns){
             Row{
                 for(j in 0 until nColumns){

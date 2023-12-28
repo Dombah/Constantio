@@ -193,14 +193,11 @@ fun StoryIcon(
     Column(
         modifier = Modifier
             .padding(16.dp)
-            .fillMaxSize()
-            .padding(8.dp)
     ) {
         Image(painter = painterResource(id = profile.icon),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(76.dp)
                 .size(70.dp)
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
