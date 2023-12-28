@@ -27,10 +27,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
@@ -124,7 +122,7 @@ fun MainScreen() {
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.End
                     ){
-                        Text(text = "Constantio", fontSize = 48.sp,
+                        Text(text = "Constantio", fontSize = 36.sp,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)
@@ -148,19 +146,10 @@ fun MainScreen() {
                             StoryIcon(profile = profile)
                         }
                     }
+
                 }
             }
             Column {
-                Row (
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ){
-                    Text(text = "Activity", fontSize = 36.sp,
-                        fontFamily = FontFamily.Cursive,
-                        fontWeight = FontWeight.W700,
-                        color = Color.White
-                    )
-                }
                 Post(
                     Post(
                         image = R.drawable.profpic1,
@@ -203,13 +192,22 @@ fun StoryIcon(
 ) {
     Column(
         modifier = Modifier
+<<<<<<< HEAD:app/src/main/java/com/domagojleskovic/constantio/ui/MainScreen.kt
             .padding(16.dp)
+=======
+            .fillMaxSize()
+            .padding(8.dp)
+>>>>>>> parent of 2dc6060 (Implement color change of likeable image button, add activity text after stories):app/src/main/java/com/domagojleskovic/constantio/MainScreen.kt
     ) {
         Image(painter = painterResource(id = profile.icon),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
+<<<<<<< HEAD:app/src/main/java/com/domagojleskovic/constantio/ui/MainScreen.kt
                 .size(76.dp)
+=======
+                .size(70.dp)
+>>>>>>> parent of 2dc6060 (Implement color change of likeable image button, add activity text after stories):app/src/main/java/com/domagojleskovic/constantio/MainScreen.kt
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
         )
@@ -221,12 +219,6 @@ fun Post(
     post: Post
 ) {
     val roundedCornerShape = 8
-    var imageLiked by remember { mutableStateOf(post.liked)}
-    val imageId = when (imageLiked){
-        true -> R.drawable.liked
-        false -> R.drawable.like
-    }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -249,14 +241,14 @@ fun Post(
             )
             Row{
                 Image(
-                    painter = painterResource(id = imageId),
+                    painter = painterResource(id = id),
                     contentDescription = null,
                     modifier = Modifier
                         .width(36.dp)
                         .height(36.dp)
                         .padding(top = 8.dp)
                         .clickable {
-                            imageLiked = !imageLiked
+                            println("Like")
                         }
                 )
                 Image(
