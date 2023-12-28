@@ -192,22 +192,16 @@ fun StoryIcon(
 ) {
     Column(
         modifier = Modifier
-<<<<<<< HEAD:app/src/main/java/com/domagojleskovic/constantio/ui/MainScreen.kt
             .padding(16.dp)
-=======
             .fillMaxSize()
             .padding(8.dp)
->>>>>>> parent of 2dc6060 (Implement color change of likeable image button, add activity text after stories):app/src/main/java/com/domagojleskovic/constantio/MainScreen.kt
     ) {
         Image(painter = painterResource(id = profile.icon),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-<<<<<<< HEAD:app/src/main/java/com/domagojleskovic/constantio/ui/MainScreen.kt
                 .size(76.dp)
-=======
                 .size(70.dp)
->>>>>>> parent of 2dc6060 (Implement color change of likeable image button, add activity text after stories):app/src/main/java/com/domagojleskovic/constantio/MainScreen.kt
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
         )
@@ -241,7 +235,7 @@ fun Post(
             )
             Row{
                 Image(
-                    painter = painterResource(id = id),
+                    painter = painterResource(id = R.drawable.like),
                     contentDescription = null,
                     modifier = Modifier
                         .width(36.dp)
