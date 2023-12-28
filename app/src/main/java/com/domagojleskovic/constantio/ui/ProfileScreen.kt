@@ -3,6 +3,7 @@ package com.domagojleskovic.constantio.ui
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,14 +17,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -61,7 +68,7 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(350.dp)
                     .background(DarkBlue_Palette)
             ) {
                 Box(
@@ -116,7 +123,7 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                                 modifier = Modifier.padding(16.dp)
                             ){
                                 Text(
-                                    text = "Profile Name", fontSize = 20.sp,
+                                    text = listOfProfiles[0].name, fontSize = 28.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
@@ -145,7 +152,29 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                                 )
                             }
                         }
-
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 16.dp)
+                        ){
+                            Button(
+                                onClick = { /*TODO*/ },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = LightRed_Palette
+                                )
+                            ) {
+                                Text(text = "Follow")
+                            }
+                            Spacer(modifier = Modifier.padding(8.dp))
+                            Button(
+                                onClick = { /*TODO*/ },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = LightRed_Palette
+                                )
+                            ) {
+                                Text(text = "Message")
+                            }
+                        }
                     }
                 }
             }
