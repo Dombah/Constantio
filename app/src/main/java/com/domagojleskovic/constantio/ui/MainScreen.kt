@@ -1,9 +1,7 @@
-package com.domagojleskovic.constantio
+package com.domagojleskovic.constantio.ui
 
-import android.widget.Space
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -28,7 +25,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,7 +35,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.DefaultStrokeLineWidth
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
@@ -47,12 +42,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
-import com.domagojleskovic.constantio.ui.theme.DarkBlue2_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRedTransparent_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import com.domagojleskovic.constantio.ui.theme.Red_Palette
 
 data class Profile(
     @DrawableRes var icon : Int,
@@ -150,7 +144,7 @@ fun MainScreen() {
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
                     )
                     LazyRow(modifier = Modifier.fillMaxWidth()){
-                        items(listOfProfiles){profile ->
+                        items(listOfProfiles){ profile ->
                             StoryIcon(profile = profile)
                         }
                     }
@@ -193,7 +187,8 @@ fun MainScreen() {
                         comments = listOf(
                             Comment(listOfProfiles[3], "Wow, so stunning!"),
                             Comment(listOfProfiles[4], "In love with you"),
-                            Comment(listOfProfiles[5], "When are we going to get out nails done?"))
+                            Comment(listOfProfiles[5], "When are we going to get out nails done?")
+                        )
 
                     )
                 )
@@ -208,14 +203,13 @@ fun StoryIcon(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
             .padding(16.dp)
     ) {
         Image(painter = painterResource(id = profile.icon),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(90.dp)
+                .size(76.dp)
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
         )
