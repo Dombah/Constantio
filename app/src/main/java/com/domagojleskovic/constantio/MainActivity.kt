@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
                                 Comment(listOfProfiles[5], "When are we going to get out nails done?")
                             )
                     )
-                    MainScreen()
+                    PostScreen(post = post1)
                 }
             }
         }
