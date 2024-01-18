@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -178,11 +179,17 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
             EasyGrid(nColumns = 3, items = listOfPictures) {
                 Image(
                     painter = painterResource(id = it),
                     contentDescription = null,
                     modifier = Modifier.padding(2.dp)
+                        .clickable(
+                            onClick = {
+                                /*TODO - Go to post screen*/
+                            }
+                        )
                 )
             }
         }
