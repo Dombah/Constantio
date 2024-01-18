@@ -44,22 +44,10 @@ import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
 
-val listOfPictures : List<Int> = listOf(
-    R.drawable.pic1,
-    R.drawable.pic2,
-    R.drawable.pic3,
-    R.drawable.pic4,
-    R.drawable.pic5,
-    R.drawable.profpic1,
-    R.drawable.profpic2,
-    R.drawable.profpic3,
-    R.drawable.profpic4,
-    R.drawable.profpic5
-)
-
-@Preview(showBackground = true)
 @Composable
-fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
+fun ProfileScreen(
+    profile : Profile
+) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -119,19 +107,19 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                         Row (
                             modifier = Modifier.fillMaxWidth()
                         ){
-                            StoryIcon(profile = listOfProfiles[0])
+                            StoryIcon(profile = profile)
                             Column (
                                 modifier = Modifier.padding(16.dp)
                             ){
                                 Text(
-                                    text = listOfProfiles[0].name, fontSize = 28.sp,
+                                    text = profile.name, fontSize = 28.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
                                     modifier = Modifier.padding(8.dp)
                                 )
                                 Text(
-                                    text = "Posts: ${listOfPictures.size}", fontSize = 20.sp,
+                                    text = "Posts: ${profile.listOfPictures.size}", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
@@ -180,17 +168,35 @@ fun ProfileScreen(/*TODO Add profile parameter for user specific pages*/) {
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            EasyGrid(nColumns = 3, items = listOfPictures) {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = null,
-                    modifier = Modifier.padding(2.dp)
-                        .clickable(
-                            onClick = {
-                                /*TODO - Go to post screen*/
-                            }
-                        )
-                )
+            if(profile.listOfPictures.isEmpty()){
+                Row (
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 36.dp, end = 32.dp),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Text(
+                        text = "No posts to display", fontSize = 32.sp,
+                        fontFamily = FontFamily.Cursive,
+                        fontWeight = FontWeight.W700,
+                        color = Color.White,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            }
+            else{
+                EasyGrid(nColumns = 3, items = profile.listOfPictures) {
+                    Image(
+                        painter = painterResource(id = it),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .padding(2.dp)
+                            .clickable(
+                                onClick = {
+                                    /*TODO - Go to post screen*/
+                                }
+                            )
+                    )
+                }
             }
         }
     }

@@ -51,7 +51,8 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
 data class Profile(
     @DrawableRes var icon : Int,
-    var name : String
+    var name : String,
+    var listOfPictures : List<Int>
 ){
     override fun toString(): String {
         return name
@@ -76,15 +77,15 @@ data class Comment(
 }
 
 val listOfProfiles = mutableListOf<Profile>(
-    Profile(R.drawable.profpic1, "Marko"),
-    Profile(R.drawable.profpic2, "Constantin"),
-    Profile(R.drawable.profpic3, "Yeaah"),
-    Profile(R.drawable.profpic4, "Wassup"),
-    Profile(R.drawable.profpic5, "Lego"),
-    Profile(R.drawable.profpic6, "Constantin"),
-    Profile(R.drawable.profpic7, "Yeaah"),
-    Profile(R.drawable.profpic8, "Wassup"),
-    Profile(R.drawable.profpic9, "Wassup")
+    Profile(R.drawable.profpic1, "Marko", listOf()),
+    Profile(R.drawable.profpic2, "Constantin", listOf()),
+    Profile(R.drawable.profpic3, "Yeaah", listOf()),
+    Profile(R.drawable.profpic4, "Wassup", listOf()),
+    Profile(R.drawable.profpic5, "Lego", listOf()),
+    Profile(R.drawable.profpic6, "Constantin", listOf()),
+    Profile(R.drawable.profpic7, "Yeaah", listOf()),
+    Profile(R.drawable.profpic8, "Wassup", listOf()),
+    Profile(R.drawable.profpic9, "Wassup", listOf())
 )
 @Preview(showBackground = true)
 @Composable
