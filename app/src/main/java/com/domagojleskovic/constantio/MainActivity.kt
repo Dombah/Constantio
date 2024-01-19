@@ -13,6 +13,7 @@ import com.domagojleskovic.constantio.ui.Post
 import com.domagojleskovic.constantio.ui.PostScreen
 import com.domagojleskovic.constantio.ui.Profile
 import com.domagojleskovic.constantio.ui.ProfileScreen
+import com.domagojleskovic.constantio.ui.RegisterScreen
 import com.domagojleskovic.constantio.ui.listOfProfiles
 import com.domagojleskovic.constantio.ui.theme.ConstantioTheme
 
@@ -65,7 +66,8 @@ class MainActivity : ComponentActivity() {
                         listOfPictures[2],
                         listOfPictures[4]
                     )
-                    ProfileScreen(listOfProfiles[2])
+                    //ProfileScreen(listOfProfiles[2])
+                    RegisterScreen()
                 }
             }
         }
