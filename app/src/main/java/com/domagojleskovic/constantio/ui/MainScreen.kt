@@ -21,16 +21,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,7 +45,9 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 data class Profile(
     @DrawableRes var icon : Int,
     var name : String,
-    var listOfPictures : List<Int>
+    var listOfPictures : List<Int>,
+    var listOfStories : List<Int>,
+    var listOfFollowedProfiles : List<Profile>
 ){
     override fun toString(): String {
         return name
@@ -77,15 +72,19 @@ data class Comment(
 }
 
 val listOfProfiles = mutableListOf<Profile>(
-    Profile(R.drawable.profpic1, "Marko", listOf()),
-    Profile(R.drawable.profpic2, "Constantin", listOf()),
-    Profile(R.drawable.profpic3, "Yeaah", listOf()),
-    Profile(R.drawable.profpic4, "Wassup", listOf()),
-    Profile(R.drawable.profpic5, "Lego", listOf()),
-    Profile(R.drawable.profpic6, "Constantin", listOf()),
-    Profile(R.drawable.profpic7, "Yeaah", listOf()),
-    Profile(R.drawable.profpic8, "Wassup", listOf()),
-    Profile(R.drawable.profpic9, "Wassup", listOf())
+    Profile(R.drawable.profpic1, "Marko", listOf(),
+        listOf(
+            R.drawable.profpic1,
+            R.drawable.profpic2
+        ), listOf()),
+    Profile(R.drawable.profpic2, "Constantin", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic3, "Yeaah", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic4, "Wassup", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic5, "Lego", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic6, "Constantin", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic7, "Yeaah", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
+    Profile(R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
 )
 @Preview(showBackground = true)
 @Composable
@@ -214,6 +213,15 @@ fun StoryIcon(
                 .size(70.dp)
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
+                .clickable (
+                    onClick = {
+                        /*
+                        for (story in profile.listOfStories){
+                            println("Story")
+                        }
+                        */
+                    }
+                )
         )
     }
 }

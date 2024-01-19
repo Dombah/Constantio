@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "967009156718",
+    "project_id": "constantio-aab23",
+    "storage_bucket": "constantio-aab23.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:967009156718:android:fe38136adb0c120bcd307f",
+        "android_client_info": {
+          "package_name": "com.domagojleskovic.constantio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgfcaL__K1p_gc6zuAafOjrevyZOdamFs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

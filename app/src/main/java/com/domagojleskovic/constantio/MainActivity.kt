@@ -16,6 +16,14 @@ import com.domagojleskovic.constantio.ui.ProfileScreen
 import com.domagojleskovic.constantio.ui.RegisterScreen
 import com.domagojleskovic.constantio.ui.listOfProfiles
 import com.domagojleskovic.constantio.ui.theme.ConstantioTheme
+import com.google.firebase.auth.auth
+import com.google.firebase.Firebase
+import android.app.Activity
+import android.util.Log
+import android.widget.Toast
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.auth
 
 
 class MainActivity : ComponentActivity() {
@@ -38,15 +46,15 @@ class MainActivity : ComponentActivity() {
                             )
                     )
                     val listOfProfiles = mutableListOf<Profile>(
-                        Profile(R.drawable.profpic1, "Marko", listOf()),
-                        Profile(R.drawable.profpic2, "Constantin", listOf()),
-                        Profile(R.drawable.profpic3, "Yeaah", listOf()),
-                        Profile(R.drawable.profpic4, "Wassup", listOf()),
-                        Profile(R.drawable.profpic5, "Lego", listOf()),
-                        Profile(R.drawable.profpic6, "Constantin", listOf()),
-                        Profile(R.drawable.profpic7, "Yeaah", listOf()),
-                        Profile(R.drawable.profpic8, "Wassup", listOf()),
-                        Profile(R.drawable.profpic9, "Wassup", listOf())
+                        Profile(R.drawable.profpic1, "Marko", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic2, "Constantin", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic3, "Yeaah", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic4, "Wassup", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic5, "Lego", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic6, "Constantin", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic7, "Yeaah", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
+                        Profile(R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
                     )
 
                     val listOfPictures : List<Int> = listOf(
@@ -66,6 +74,24 @@ class MainActivity : ComponentActivity() {
                         listOfPictures[2],
                         listOfPictures[4]
                     )
+                    var email = "marko@gmail.com"
+                    var password = "password"
+                    var auth = Firebase.auth
+
+                    auth.createUserWithEmailAndPassword(email, password)
+                        .addOnCompleteListener(this){
+                            task->
+                            if(task.isSuccessful){
+                                println("Success")
+                            }
+                            else
+                            {
+                                println("Error")
+                            }
+                        }
+                    /*
+                    val authenticator = EmailPasswordActivity()
+                    authenticator.createAccount("Marko@gmail.com", "LigmaSigma")*/
                     //ProfileScreen(listOfProfiles[2])
                     RegisterScreen()
                 }
