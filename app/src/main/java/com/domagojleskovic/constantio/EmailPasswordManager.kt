@@ -1,11 +1,9 @@
 package com.domagojleskovic.constantio
 
-import android.app.Activity
 import android.content.Context
-import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import com.domagojleskovic.constantio.ui.MainScreen
+import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -13,7 +11,7 @@ import com.google.firebase.Firebase
 
 class EmailPasswordManager(
     private val context : Context,
-
+    private val navController: NavController
 ) {
 
     private var auth: FirebaseAuth = Firebase.auth
@@ -42,11 +40,9 @@ class EmailPasswordManager(
     }
 
     fun signIn(email: String, password: String) {
-        // [START sign_in_with_email]
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser
                     updateUI(user)
@@ -76,7 +72,14 @@ class EmailPasswordManager(
 
     private fun updateUI(user: FirebaseUser?)
     {
-
+        if(user != null)
+        {
+            navController.navigate("main_screen")
+        }
+        else{
+            Toast.makeText(context, "User with given credentials not found", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     private fun reload()

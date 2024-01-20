@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
@@ -52,7 +53,9 @@ import com.google.common.base.Strings
 
 @Preview(showBackground = true)
 @Composable
-fun RegisterScreen() {
+fun RegisterScreen(
+    emailPasswordManager: EmailPasswordManager
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
@@ -151,10 +154,12 @@ fun RegisterScreen() {
                             alertDialogMessage = "Oops. It looks like you forgot to enter either the email or password. " +
                                     "Please check email and password input "
                             openAlertDialog = true
-                        }else if(!password.equals(confirmPassword)){
+                        }else if(password != confirmPassword){
                             alertDialogTitle = "Password mismatch error"
                             alertDialogMessage = "The two passwords do not match. Please try again"
                             openAlertDialog = true
+                        }else{
+                            emailPasswordManager.createAccount(email,password)
                         }
                     },
                     modifier = Modifier.width(150.dp),

@@ -80,17 +80,16 @@ class MainActivity : ComponentActivity() {
                     else{
 
                     }*/
-                    val emailPasswordManager = EmailPasswordManager(this)
                     val navController = rememberNavController()
+                    val emailPasswordManager = EmailPasswordManager(this, navController)
                     NavHost(navController = navController, startDestination = "login") {
                         composable("login") {
                             LoginScreen(
-                                onNavigateMainScreen = { navController.navigate("main_screen") },
                                 onNavigateRegisterScreen = { navController.navigate("register")},
                                 emailPasswordManager
                             )
                         }
-                        composable("register") { RegisterScreen() }
+                        composable("register") { RegisterScreen(emailPasswordManager) }
                         composable("main_screen") { MainScreen()}
                         composable("profile") { ProfileScreen(profile = listOfProfiles[0])}
                     }
