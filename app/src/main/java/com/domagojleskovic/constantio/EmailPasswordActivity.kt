@@ -1,6 +1,7 @@
 package com.domagojleskovic.constantio
 
 import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -10,36 +11,17 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 
-open class EmailPasswordActivity : Activity() {
+class EmailPasswordManager(
+    private val context : Context,
 
-    // [START declare_auth]
-    private lateinit var auth: FirebaseAuth
-    // [END declare_auth]
+) {
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private var auth: FirebaseAuth = Firebase.auth
 
-        // [START initialize_auth]
-        // Initialize Firebase Auth
-        auth = Firebase.auth
-        // [END initialize_auth]
-    }
-
-    // [START on_start_check_user]
-    public override fun onStart() {
-        super.onStart()
-        // Check if user is signed in (non-null) and update UI accordingly.
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            reload()
-        }
-    }
-    // [END on_start_check_user]
-
-    internal fun createAccount(email: String, password: String) {
+    fun createAccount(email: String, password: String) {
         // [START create_user_with_email]
         auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "createUserWithEmail:success")
@@ -49,7 +31,7 @@ open class EmailPasswordActivity : Activity() {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)
                     Toast.makeText(
-                        baseContext,
+                        context,
                         "Authentication failed.",
                         Toast.LENGTH_SHORT,
                     ).show()
@@ -59,10 +41,10 @@ open class EmailPasswordActivity : Activity() {
         // [END create_user_with_email]
     }
 
-    private fun signIn(email: String, password: String) {
+    fun signIn(email: String, password: String) {
         // [START sign_in_with_email]
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(this) { task ->
+            .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
@@ -72,7 +54,7 @@ open class EmailPasswordActivity : Activity() {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
                     Toast.makeText(
-                        baseContext,
+                        context,
                         "Authentication failed.",
                         Toast.LENGTH_SHORT,
                     ).show()
@@ -86,7 +68,7 @@ open class EmailPasswordActivity : Activity() {
         // [START send_email_verification]
         val user = auth.currentUser!!
         user.sendEmailVerification()
-            .addOnCompleteListener(this) { task ->
+            .addOnCompleteListener { task ->
                 // Email Verification sent
             }
         // [END send_email_verification]
@@ -94,9 +76,12 @@ open class EmailPasswordActivity : Activity() {
 
     private fun updateUI(user: FirebaseUser?)
     {
+
     }
 
-    private fun reload() {
+    private fun reload()
+    {
+
     }
 
     companion object {

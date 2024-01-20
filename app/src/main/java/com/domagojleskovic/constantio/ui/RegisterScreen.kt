@@ -86,7 +86,7 @@ fun RegisterScreen() {
                         Text("Username", color = Color.White)
                     },
                     shape = RoundedCornerShape(16.dp),
-
+                    textStyle = TextStyle(color = Color.White),
                     )
                 OutlinedTextField(
                     value = textPassword,
@@ -97,16 +97,18 @@ fun RegisterScreen() {
                         Text("Password", color = Color.White)
                     },
                     shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(color = Color.White),
                 )
                 OutlinedTextField(
-                    value = textPassword,
+                    value = confirmPassword,
                     onValueChange = {
-                        textPassword = it
+                        confirmPassword = it
                     },
                     label = {
                         Text("Confirm Password: ", color = Color.White)
                     },
                     shape = RoundedCornerShape(16.dp),
+                    textStyle = TextStyle(color = Color.White),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
@@ -129,7 +131,6 @@ fun RegisterScreen() {
         }
 
     }
-
 }
 
 

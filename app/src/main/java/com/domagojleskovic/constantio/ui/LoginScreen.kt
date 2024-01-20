@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +30,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Green
+import androidx.compose.ui.graphics.Color.Companion.Yellow
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
@@ -35,16 +40,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.domagojleskovic.constantio.ui.theme.Red_Palette
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen() {
-    var textUser by remember { mutableStateOf("") }
-    var textPassword by remember { mutableStateOf("") }
+fun LoginScreen(
+    onNavigateMainScreen: () -> Unit,
+    onNavigateRegisterScreen: () -> Unit,
+    emailPasswordManager: EmailPasswordManager
+) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
@@ -77,25 +87,26 @@ fun LoginScreen() {
                         fontWeight = FontWeight.W700,
                         color = Color.White)
                     OutlinedTextField(
-                        value = textUser, onValueChange = {
-                            textUser = it
+                        value = email, onValueChange = {
+                            email = it
                         },
                         label = {
                             Text("Username", color = Color.White)
                         },
                         modifier = Modifier.padding(8.dp),
                         shape = RoundedCornerShape(16.dp),
-
+                        textStyle = TextStyle(color = Color.White),
                     )
                     OutlinedTextField(
-                        value = textPassword,
+                        value = password,
                         onValueChange = {
-                            textPassword = it
+                            password = it
                         },
                         label = {
                             Text("Password", color = Color.White)
                         },
                         shape = RoundedCornerShape(16.dp),
+                        textStyle = TextStyle(color = Color.White),
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Row(
@@ -114,7 +125,13 @@ fun LoginScreen() {
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                                        if(email == null){
+
+                                        }else if(password == null){
+
+                                        }
+                                  },
                         modifier = Modifier.width(150.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = LightRed_Palette
@@ -131,7 +148,7 @@ fun LoginScreen() {
                             color = Color.White)
                         ClickableText(
                             text = AnnotatedString("Sign Up"),
-                            onClick = {/*TODO*/},
+                            onClick = {onNavigateRegisterScreen()},
                             style = TextStyle(
                                 color = Red_Palette
                             )
