@@ -4,12 +4,13 @@ import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import com.domagojleskovic.constantio.ui.MainScreen
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 
-class EmailPasswordActivity : Activity() {
+open class EmailPasswordActivity : Activity() {
 
     // [START declare_auth]
     private lateinit var auth: FirebaseAuth
@@ -35,7 +36,7 @@ class EmailPasswordActivity : Activity() {
     }
     // [END on_start_check_user]
 
-    fun createAccount(email: String, password: String) {
+    internal fun createAccount(email: String, password: String) {
         // [START create_user_with_email]
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
@@ -58,7 +59,7 @@ class EmailPasswordActivity : Activity() {
         // [END create_user_with_email]
     }
 
-    fun signIn(email: String, password: String) {
+    private fun signIn(email: String, password: String) {
         // [START sign_in_with_email]
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener(this) { task ->
@@ -91,7 +92,8 @@ class EmailPasswordActivity : Activity() {
         // [END send_email_verification]
     }
 
-    private fun updateUI(user: FirebaseUser?) {
+    private fun updateUI(user: FirebaseUser?)
+    {
     }
 
     private fun reload() {

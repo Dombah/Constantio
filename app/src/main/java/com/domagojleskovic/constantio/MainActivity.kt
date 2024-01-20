@@ -19,11 +19,13 @@ import com.domagojleskovic.constantio.ui.theme.ConstantioTheme
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import com.domagojleskovic.constantio.SignUpActivity
 
 
 class MainActivity : ComponentActivity() {
@@ -74,10 +76,10 @@ class MainActivity : ComponentActivity() {
                         listOfPictures[2],
                         listOfPictures[4]
                     )
-                    var email = "marko@gmail.com"
+                    var email = "slavko@gmail.com"
                     var password = "password"
+                    /*
                     var auth = Firebase.auth
-
                     auth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(this){
                             task->
@@ -89,11 +91,9 @@ class MainActivity : ComponentActivity() {
                                 println("Error")
                             }
                         }
-                    /*
-                    val authenticator = EmailPasswordActivity()
-                    authenticator.createAccount("Marko@gmail.com", "LigmaSigma")*/
-                    //ProfileScreen(listOfProfiles[2])
-                    RegisterScreen()
+                 */
+                    val intent = Intent(this, SignUpActivity::class.java)
+                    startActivity(intent)
                 }
             }
         }
