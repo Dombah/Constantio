@@ -93,6 +93,8 @@ class MainActivity : ComponentActivity() {
                         }
                  */
                     val intent = Intent(this, SignUpActivity::class.java)
+                    intent.putExtra("email", "darkolazic@gmail.com")
+                    intent.putExtra("password", "europolinterpol123")
                     startActivity(intent)
                 }
             }
