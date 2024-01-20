@@ -48,6 +48,7 @@ import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.domagojleskovic.constantio.ui.theme.Red_Palette
+import com.google.common.base.Strings
 
 @Preview(showBackground = true)
 @Composable
@@ -55,8 +56,12 @@ fun RegisterScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
+    var openAlertDialog by remember { mutableStateOf(false)}
 
     var passwordVisible by remember { mutableStateOf(false)}
+
+    var alertDialogTitle by remember { mutableStateOf("") }
+    var alertDialogMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -140,7 +145,18 @@ fun RegisterScreen() {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        if(Strings.isNullOrEmpty(email) || Strings.isNullOrEmpty(password) || Strings.isNullOrEmpty(confirmPassword)){
+                            alertDialogTitle = "Error with input"
+                            alertDialogMessage = "Oops. It looks like you forgot to enter either the email or password. " +
+                                    "Please check email and password input "
+                            openAlertDialog = true
+                        }else if(!password.equals(confirmPassword)){
+                            alertDialogTitle = "Password mismatch error"
+                            alertDialogMessage = "The two passwords do not match. Please try again"
+                            openAlertDialog = true
+                        }
+                    },
                     modifier = Modifier.width(150.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = LightRed_Palette
@@ -156,8 +172,18 @@ fun RegisterScreen() {
 
                 }
             }
-        }
 
+        }
+        when {
+            openAlertDialog -> {
+                EmailPasswordAlertDialog(
+                    onDismissRequest = { openAlertDialog = false },
+                    onConfirmation = { openAlertDialog = false },
+                    dialogTitle = alertDialogTitle,
+                    dialogText = alertDialogMessage
+                )
+            }
+        }
     }
 }
 

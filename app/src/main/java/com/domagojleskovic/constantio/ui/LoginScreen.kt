@@ -1,5 +1,6 @@
 package com.domagojleskovic.constantio.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -27,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Yellow
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
@@ -56,6 +60,7 @@ import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.domagojleskovic.constantio.ui.theme.Red_Palette
+import com.google.common.base.Strings.isNullOrEmpty
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,9 +69,16 @@ fun LoginScreen(
     onNavigateRegisterScreen: () -> Unit,
     emailPasswordManager: EmailPasswordManager
 ) {
+
+    val context = LocalContext.current
+    var openAlertDialog by remember { mutableStateOf(false)}
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+
+    var alertDialogTitle by remember { mutableStateOf("") }
+    var alertDialogMessage by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier
@@ -153,14 +165,15 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                     Button(
                         onClick = {
-                            /* TODO
-                                        if(email == null){
+                                  if(isNullOrEmpty(email) || isNullOrEmpty(password)){
+                                      alertDialogTitle = "Error with input"
+                                      alertDialogMessage = "Oops. It looks like you forgot to enter either the email or password. " +
+                                              "Please check email and password input "
+                                      openAlertDialog = true
+                                  }else{
 
-                                        }else if(password == null){
-
-                                        }
-                                       */
-                                  },
+                                  }
+                        },
                         modifier = Modifier.width(150.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = LightRed_Palette
@@ -188,7 +201,46 @@ fun LoginScreen(
             }
 
         }
+    when{
+        openAlertDialog -> {
+            EmailPasswordAlertDialog(
+                onDismissRequest = { openAlertDialog = false },
+                onConfirmation = { openAlertDialog = false },
+                dialogTitle = alertDialogTitle,
+                dialogText = alertDialogMessage
+            )
 
+        }
+    }
+}
+
+@Composable
+fun EmailPasswordAlertDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+){
+    AlertDialog(
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+    )
 }
 
 
