@@ -1,14 +1,14 @@
 {
   "project_info": {
-    "project_number": "967009156718",
-    "firebase_url": "https://constantio-aab23-default-rtdb.europe-west1.firebasedatabase.app",
-    "project_id": "constantio-aab23",
-    "storage_bucket": "constantio-aab23.appspot.com"
+    "project_number": "601704646436",
+    "firebase_url": "https://constantio-52ddf-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "constantio-52ddf",
+    "storage_bucket": "constantio-52ddf.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:967009156718:android:fe38136adb0c120bcd307f",
+        "mobilesdk_app_id": "1:601704646436:android:da373e2c9c43abf88f55b1",
         "android_client_info": {
           "package_name": "com.domagojleskovic.constantio"
         }
@@ -16,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAgfcaL__K1p_gc6zuAafOjrevyZOdamFs"
+          "current_key": "AIzaSyCsBjc0BWEkxHZfQkoFQ9V98X9JPiyRlGI"
         }
       ],
       "services": {

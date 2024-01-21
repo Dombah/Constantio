@@ -1,5 +1,6 @@
 package com.domagojleskovic.constantio.ui
 
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -24,6 +25,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,20 +42,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.IgnoreExtraProperties
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 
+@IgnoreExtraProperties
 data class Profile(
-    val userID : String? = null,
-    //@DrawableRes var icon : Int,
+    @DrawableRes var icon : Int? = R.drawable.logo,
+    val userId : String? = null,
     var name : String? = null,
     var email : String? = null,
-    /*var listOfPictures : List<Int>,
-    var listOfStories : List<Int>,
-    var listOfFollowedProfiles : List<Profile>*/
+    var listOfPictures : List<Int> = listOf(),
+    var listOfStories : List<Int> = listOf(),
+    var listOfFollowedProfiles : List<Profile> = listOf()
 ){
     override fun toString(): String {
         return if(name == null)
@@ -93,20 +106,45 @@ val listOfProfiles = mutableListOf<Profile>(
     Profile(null,R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
 )*/
 val listOfProfiles = mutableListOf<Profile>(
-    Profile("null",  "Marko", "Markic@gmail.com"),
-    Profile("null", "Constantin","Markic@gmail.com"),
-    Profile("null", "Yeaah","Markic@gmail.com"),
-    Profile("null", "Wassup","Markic@gmail.com"),
-    Profile("null", "Lego","Markic@gmail.com"),
-    Profile("null", "Constantin","Markic@gmail.com"),
-    Profile("null", "Yeaah","Markic@gmail.com"),
-    Profile("null", "Wassup","Markic@gmail.com"),
-    Profile("null", "Wassup","Markic@gmail.com")
+    Profile(R.drawable.logo,"null",  "Marko", "Markic@gmail.com"),
+    Profile(R.drawable.logo, "null", "Constantin","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Yeaah","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Lego","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Constantin","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Yeaah","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com"),
+    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com")
 )
 @Composable
 fun MainScreen(
-    user : FirebaseUser?
+    emailPasswordManager: EmailPasswordManager
 ) {
+    var profile by remember { mutableStateOf<Profile?>(null) }
+    val userId = emailPasswordManager.getCurrentUser()?.uid
+
+    DisposableEffect(userId) {
+        val userListener = emailPasswordManager.getDBO()
+            .child("users")
+            .child(userId!!)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val userProfile = snapshot.getValue<Profile>()
+                    profile = userProfile
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error getting data", error.toException())
+                }
+            })
+
+        onDispose {
+            emailPasswordManager.getDBO()
+                .child("users")
+                .child(userId)
+                .removeEventListener(userListener)
+        }
+    }
+    Log.i("AppInfo", profile.toString())
     val scrollState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
@@ -176,13 +214,6 @@ fun MainScreen(
                             fontWeight = FontWeight.W700,
                             color = Color.White)
                     }
-                }
-            }
-            Column (
-                modifier = Modifier.fillMaxSize()
-            ){
-                if (user != null) {
-                    Text(text = "User : ${user.email}", fontSize = 20.sp, color = Color.White)
                 }
             }
         }

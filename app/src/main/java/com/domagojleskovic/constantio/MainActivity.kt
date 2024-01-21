@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("register") { RegisterScreen(emailPasswordManager) }
-                        composable("main_screen") { MainScreen(emailPasswordManager.getCurrentUser()) }
+                        composable("main_screen") { MainScreen(emailPasswordManager) }
                         composable("profile") { ProfileScreen(profile = listOfProfiles[0])}
                     }
                 }

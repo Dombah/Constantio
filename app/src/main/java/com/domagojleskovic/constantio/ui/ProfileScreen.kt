@@ -112,7 +112,7 @@ fun ProfileScreen(
                                 modifier = Modifier.padding(16.dp)
                             ){
                                 Text(
-                                    text = profile.name, fontSize = 28.sp,
+                                    text = profile.name as String, fontSize = 28.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
