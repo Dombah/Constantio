@@ -48,8 +48,6 @@ import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import com.domagojleskovic.constantio.ui.theme.Red_Palette
-import com.google.common.base.Strings
 
 @Preview(showBackground = true)
 @Composable
@@ -149,7 +147,7 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        if(Strings.isNullOrEmpty(email) || Strings.isNullOrEmpty(password) || Strings.isNullOrEmpty(confirmPassword)){
+                        if(email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
                             alertDialogTitle = "Error with input"
                             alertDialogMessage = "Oops. It looks like you forgot to enter either the email or password. " +
                                     "Please check email and password input "

@@ -39,18 +39,23 @@ import androidx.compose.ui.unit.sp
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
-import com.domagojleskovic.constantio.ui.theme.LightRedTransparent_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
+import com.google.firebase.auth.FirebaseUser
 
 data class Profile(
-    @DrawableRes var icon : Int,
-    var name : String,
-    var listOfPictures : List<Int>,
+    val userID : String? = null,
+    //@DrawableRes var icon : Int,
+    var name : String? = null,
+    var email : String? = null,
+    /*var listOfPictures : List<Int>,
     var listOfStories : List<Int>,
-    var listOfFollowedProfiles : List<Profile>
+    var listOfFollowedProfiles : List<Profile>*/
 ){
     override fun toString(): String {
-        return name
+        return if(name == null)
+            ""
+        else
+            name as String
     }
 }
 
@@ -71,24 +76,37 @@ data class Comment(
     }
 }
 
+/*
 val listOfProfiles = mutableListOf<Profile>(
-    Profile(R.drawable.profpic1, "Marko", listOf(),
+    Profile(null, R.drawable.profpic1, "Marko", listOf(),
         listOf(
             R.drawable.profpic1,
             R.drawable.profpic2
         ), listOf()),
-    Profile(R.drawable.profpic2, "Constantin", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic3, "Yeaah", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic4, "Wassup", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic5, "Lego", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic6, "Constantin", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic7, "Yeaah", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
-    Profile(R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
+    Profile(null, R.drawable.profpic2, "Constantin", listOf(), listOf(), listOf()),
+    Profile(null, R.drawable.profpic3, "Yeaah", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic4, "Wassup", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic5, "Lego", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic6, "Constantin", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic7, "Yeaah", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
+    Profile(null,R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
+)*/
+val listOfProfiles = mutableListOf<Profile>(
+    Profile("null",  "Marko", "Markic@gmail.com"),
+    Profile("null", "Constantin","Markic@gmail.com"),
+    Profile("null", "Yeaah","Markic@gmail.com"),
+    Profile("null", "Wassup","Markic@gmail.com"),
+    Profile("null", "Lego","Markic@gmail.com"),
+    Profile("null", "Constantin","Markic@gmail.com"),
+    Profile("null", "Yeaah","Markic@gmail.com"),
+    Profile("null", "Wassup","Markic@gmail.com"),
+    Profile("null", "Wassup","Markic@gmail.com")
 )
-@Preview(showBackground = true)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    user : FirebaseUser?
+) {
     val scrollState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
@@ -158,41 +176,14 @@ fun MainScreen() {
                             fontWeight = FontWeight.W700,
                             color = Color.White)
                     }
-
                 }
             }
-            Column {
-                Post(
-                    Post(
-                        image = R.drawable.profpic1,
-                        description = "Living life :D" ,
-                        profile = listOfProfiles[0],
-                        comments = listOf()
-                    )
-                )
-                Post(
-                    Post(image = R.drawable.profpic2,
-                        description = "Where my girls at tonight?" ,
-                        profile = listOfProfiles[1],
-                        comments = listOf(
-                            Comment(listOfProfiles[2], "Wow, so stunning!"),
-                            Comment(listOfProfiles[3], "In love with you"),
-                            Comment(listOfProfiles[6], "When are we going to get out nails done?")
-                        ))
-
-                )
-                Post(
-                    Post(image = R.drawable.profpic3,
-                        description = "Where my girls at?" ,
-                        profile = listOfProfiles[2],
-                        comments = listOf(
-                            Comment(listOfProfiles[3], "Wow, so stunning!"),
-                            Comment(listOfProfiles[4], "In love with you"),
-                            Comment(listOfProfiles[5], "When are we going to get out nails done?")
-                        )
-
-                    )
-                )
+            Column (
+                modifier = Modifier.fillMaxSize()
+            ){
+                if (user != null) {
+                    Text(text = "User : ${user.email}", fontSize = 20.sp, color = Color.White)
+                }
             }
         }
     }
@@ -206,14 +197,14 @@ fun StoryIcon(
         modifier = Modifier
             .padding(16.dp)
     ) {
-        Image(painter = painterResource(id = profile.icon),
+        Image(painter = painterResource(id = R.drawable.profpic1/*profile.icon*/),
             contentDescription = "Profile Picture",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(70.dp)
                 .clip(CircleShape)
                 .border(2.dp, Brownish_Palette, CircleShape)
-                .clickable (
+                .clickable(
                     onClick = {
                         /*
                         for (story in profile.listOfStories){

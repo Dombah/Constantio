@@ -51,7 +51,6 @@ import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.domagojleskovic.constantio.ui.theme.Red_Palette
-import com.google.common.base.Strings.isNullOrEmpty
 
 @Composable
 fun LoginScreen(
@@ -155,7 +154,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
-                        if (isNullOrEmpty(email) || isNullOrEmpty(password)) {
+                        if (email.isEmpty() || password.isEmpty()) {
                             alertDialogTitle = "Error with input"
                             alertDialogMessage =
                                 "Oops. It looks like you forgot to enter either the email or password. " +

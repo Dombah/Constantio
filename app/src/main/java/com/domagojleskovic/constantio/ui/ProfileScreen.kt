@@ -118,13 +118,13 @@ fun ProfileScreen(
                                     color = Color.White,
                                     modifier = Modifier.padding(8.dp)
                                 )
-                                Text(
-                                    text = "Posts: ${profile.listOfPictures.size}", fontSize = 20.sp,
-                                    fontFamily = FontFamily.Cursive,
-                                    fontWeight = FontWeight.W700,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(8.dp)
-                                )
+                                //Text(
+                                //    text = "Posts: ${profile.listOfPictures.size}", fontSize = 20.sp,
+                                //    fontFamily = FontFamily.Cursive,
+                                //    fontWeight = FontWeight.W700,
+                                //    color = Color.White,
+                                //    modifier = Modifier.padding(8.dp)
+                                //)
                                 Text(
                                     text = "Followers: 0", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
@@ -168,6 +168,7 @@ fun ProfileScreen(
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
+            /*
             if(profile.listOfPictures.isEmpty()){
                 Row (
                     modifier = Modifier.fillMaxWidth()
@@ -198,6 +199,7 @@ fun ProfileScreen(
                     )
                 }
             }
+            */
         }
     }
 }

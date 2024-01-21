@@ -1,6 +1,8 @@
 package com.domagojleskovic.constantio
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,12 +22,20 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.domagojleskovic.constantio.ui.LoginScreen
+import com.google.firebase.Firebase
+import com.google.firebase.FirebaseApp
+import com.google.firebase.auth.auth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.database
+import com.google.firebase.initialize
 
 
 class MainActivity : ComponentActivity() {
-    private lateinit var auth: FirebaseAuth
+    private val database: DatabaseReference = Firebase.database.reference
+    private var auth: FirebaseAuth = Firebase.auth
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Firebase.initialize(this)
         setContent {
             ConstantioTheme {
                 // A surface container using the 'background' color from the theme
@@ -33,53 +43,6 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    val post1 = Post(
-                        image = R.drawable.profpic3,
-                        description = "Where my girls at?",
-                        profile = listOfProfiles[2],
-                        comments = listOf(
-                            Comment(listOfProfiles[3], "Wow, so stunning!"),
-                            Comment(listOfProfiles[4], "In love with you"),
-                            Comment(listOfProfiles[5], "When are we going to get out nails done?")
-                        )
-                    )
-                    val listOfProfiles = mutableListOf<Profile>(
-                        Profile(R.drawable.profpic1, "Marko", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic2, "Constantin", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic3, "Yeaah", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic4, "Wassup", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic5, "Lego", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic6, "Constantin", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic7, "Yeaah", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
-                        Profile(R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
-                    )
-
-                    val listOfPictures: List<Int> = listOf(
-                        R.drawable.pic1,
-                        R.drawable.pic2,
-                        R.drawable.pic3,
-                        R.drawable.pic4,
-                        R.drawable.pic5,
-                        R.drawable.profpic1,
-                        R.drawable.profpic2,
-                        R.drawable.profpic3,
-                        R.drawable.profpic4,
-                        R.drawable.profpic5
-                    )
-                    listOfProfiles[2].listOfPictures = listOf(
-                        listOfPictures[0],
-                        listOfPictures[2],
-                        listOfPictures[4]
-                    )
-                    /*
-                auth = Firebase.auth
-                    if(auth.currentUser == null){
-
-                    }
-                    else{
-
-                    }*/
                     val navController = rememberNavController()
                     val emailPasswordManager = EmailPasswordManager(this, navController)
                     NavHost(navController = navController, startDestination = "login") {
@@ -90,7 +53,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("register") { RegisterScreen(emailPasswordManager) }
-                        composable("main_screen") { MainScreen()}
+                        composable("main_screen") { MainScreen(emailPasswordManager.getCurrentUser()) }
                         composable("profile") { ProfileScreen(profile = listOfProfiles[0])}
                     }
                 }
@@ -98,4 +61,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
