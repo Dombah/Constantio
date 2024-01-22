@@ -1,6 +1,10 @@
 package com.domagojleskovic.constantio.ui
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,6 +26,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,20 +45,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.IgnoreExtraProperties
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.getValue
+import kotlinx.coroutines.processNextEventInCurrentThread
+import java.util.Date
 
 @IgnoreExtraProperties
 data class Profile(
@@ -77,7 +84,8 @@ data class Post(
     var description : String,
     val profile : Profile,
     var comments : List<Comment>,
-    var liked : Boolean = false
+    var liked : Boolean = false,
+    var datePosted : Date
 )
 
 data class Comment(
@@ -120,6 +128,16 @@ val listOfProfiles = mutableListOf<Profile>(
 fun MainScreen(
     emailPasswordManager: EmailPasswordManager
 ) {
+    var selectedImageUris by remember {
+        mutableStateOf<List<Uri?>>(emptyList())
+    }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = {
+            selectedImageUris = it
+        }
+    )
+
     var profile by remember { mutableStateOf<Profile?>(null) }
     val userId = emailPasswordManager.getCurrentUser()?.uid
 
@@ -136,7 +154,6 @@ fun MainScreen(
                     Log.e("FirebaseError", "Error getting data", error.toException())
                 }
             })
-
         onDispose {
             emailPasswordManager.getDBO()
                 .child("users")
@@ -144,7 +161,6 @@ fun MainScreen(
                 .removeEventListener(userListener)
         }
     }
-    Log.i("AppInfo", profile.toString())
     val scrollState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
@@ -206,7 +222,7 @@ fun MainScreen(
                         }
                     }
                     Column(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = "Activity", fontSize = 36.sp,
@@ -216,6 +232,32 @@ fun MainScreen(
                     }
                 }
             }
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Button(
+                    onClick = {
+                        photoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Text(text = "Click me", fontSize = 20.sp, color = Color.White)
+                }
+            }
+        }
+        items(selectedImageUris){
+                selectedImageUri ->
+            AsyncImage(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                model = selectedImageUri,
+                contentDescription = null,
+                contentScale = ContentScale.Crop
+            )
         }
     }
 }

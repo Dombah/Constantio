@@ -58,8 +58,8 @@ fun LoginScreen(
     emailPasswordManager: EmailPasswordManager
 ) {
     var openAlertDialog by remember { mutableStateOf(false) }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
+    var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
 
 
