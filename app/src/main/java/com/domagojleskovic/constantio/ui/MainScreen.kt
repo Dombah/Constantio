@@ -122,6 +122,7 @@ val listOfProfiles = mutableListOf<Profile>(
 
 @Composable
 fun MainScreen(
+    onNavigateProfileScreen : () -> Unit,
     emailPasswordManager: EmailPasswordManager
 ) {
     val context = LocalContext.current
@@ -161,7 +162,7 @@ fun MainScreen(
                         emailPasswordManager.getCurrentUserImageUri {
                             uri ->
                             if(uri != null){
-                                val updatedProfile = userProfile.copy(icon = urigit )
+                                val updatedProfile = userProfile.copy(icon = uri)
                                 profile = updatedProfile
                             }
                             else{
@@ -223,8 +224,14 @@ fun MainScreen(
                             modifier = Modifier
                                 .width(36.dp)
                                 .height(36.dp)
-                                .padding(top = 8.dp),
-                            contentScale = ContentScale.Crop
+                                .padding(top = 8.dp)
+                                .clickable (
+                                    onClick = {
+                                        onNavigateProfileScreen()
+                                    }
+                                ),
+                            contentScale = ContentScale.Crop,
+
                         )
                         Spacer(modifier = Modifier.width(70.dp))
                         Text(text = "Constantio", fontSize = 36.sp,
