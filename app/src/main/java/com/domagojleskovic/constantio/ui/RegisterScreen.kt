@@ -58,9 +58,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
     var openAlertDialog by remember { mutableStateOf(false)}
-
     var passwordVisible by remember { mutableStateOf(false)}
-
     var alertDialogTitle by remember { mutableStateOf("") }
     var alertDialogMessage by remember { mutableStateOf("") }
 

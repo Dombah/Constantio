@@ -1,6 +1,8 @@
 package com.domagojleskovic.constantio
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.navigation.NavController
@@ -10,16 +12,20 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.IgnoreExtraProperties
 import com.google.firebase.database.database
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import java.io.File
 
 class EmailPasswordManager(
-    private val context : Context,
-    private val navController: NavController
+    private val context: Context,
+    private val navController: NavController,
 ) {
 
     private var auth: FirebaseAuth = Firebase.auth
     private val database: DatabaseReference = Firebase.database.reference
+    private lateinit var storage : StorageReference
+
     fun getCurrentUser() : FirebaseUser?{
         return auth.currentUser
     }
@@ -50,10 +56,35 @@ class EmailPasswordManager(
         database.child("users").child(userId).setValue(user)
             .addOnSuccessListener {
                 Log.d("FirebaseWrite", "User data written successfully")
+                val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
+                storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
+                storage.putFile(imageUri).addOnSuccessListener {
+                    Toast.makeText(context, "Successfully created user", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener{
+                    Toast.makeText(context, "Failed created user", Toast.LENGTH_SHORT).show()
+                }
             }
             .addOnFailureListener { e ->
                 Log.e("FirebaseWrite", "Error writing user data", e)
             }
+    }
+
+    fun getCurrentUserImageUri(callback: (Uri?) -> Unit) {
+        val user = auth.currentUser
+        storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/${user?.uid}")
+        if(user != null) {
+            val localFile = File.createTempFile("images", ".png")
+            storage.getFile(localFile).addOnSuccessListener {
+                // Local temp file has been created
+                callback(Uri.fromFile(localFile))
+            }.addOnFailureListener {
+                // Handle any errors
+                callback(null)
+            }
+        }
+        else{
+            callback(null)
+        }
     }
     fun signIn(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password)

@@ -1,5 +1,6 @@
 package com.domagojleskovic.constantio.ui
 
+import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -29,6 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -42,12 +44,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.modifier.modifierLocalConsumer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
@@ -63,7 +69,7 @@ import java.util.Date
 
 @IgnoreExtraProperties
 data class Profile(
-    @DrawableRes var icon : Int? = R.drawable.logo,
+    var icon : Uri? = null,
     val userId : String? = null,
     var name : String? = null,
     var email : String? = null,
@@ -113,31 +119,34 @@ val listOfProfiles = mutableListOf<Profile>(
     Profile(null,R.drawable.profpic8, "Wassup", listOf(), listOf(), listOf()),
     Profile(null,R.drawable.profpic9, "Wassup", listOf(), listOf(), listOf())
 )*/
-val listOfProfiles = mutableListOf<Profile>(
-    Profile(R.drawable.logo,"null",  "Marko", "Markic@gmail.com"),
-    Profile(R.drawable.logo, "null", "Constantin","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Yeaah","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Lego","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Constantin","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Yeaah","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com"),
-    Profile(R.drawable.logo,"null", "Wassup","Markic@gmail.com")
-)
+
 @Composable
 fun MainScreen(
     emailPasswordManager: EmailPasswordManager
 ) {
-    var selectedImageUris by remember {
-        mutableStateOf<List<Uri?>>(emptyList())
-    }
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(),
-        onResult = {
-            selectedImageUris = it
-        }
+    val context = LocalContext.current
+    val listOfProfiles = mutableListOf<Profile>(
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null",  "Marko", "Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"), "null", "Constantin","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Yeaah","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Lego","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Constantin","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Yeaah","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com"),
+        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com")
     )
-
+        /*TODO move to profile screen
+        var selectedImageUris by remember {
+            mutableStateOf<List<Uri?>>(emptyList())
+        }
+        val photoPickerLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.PickMultipleVisualMedia(),
+            onResult = {
+                selectedImageUris = it
+            }
+        )
+        */
     var profile by remember { mutableStateOf<Profile?>(null) }
     val userId = emailPasswordManager.getCurrentUser()?.uid
 
@@ -148,7 +157,18 @@ fun MainScreen(
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val userProfile = snapshot.getValue<Profile>()
-                    profile = userProfile
+                   userProfile?.let {
+                        emailPasswordManager.getCurrentUserImageUri {
+                            uri ->
+                            if(uri != null){
+                                val updatedProfile = userProfile.copy(icon = urigit )
+                                profile = updatedProfile
+                            }
+                            else{
+                                //
+                            }
+                        }
+                    }
                 }
                 override fun onCancelled(error: DatabaseError) {
                     Log.e("FirebaseError", "Error getting data", error.toException())
@@ -197,6 +217,16 @@ fun MainScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.End
                     ){
+                        Image(
+                            painter = rememberAsyncImagePainter(profile?.icon),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(36.dp)
+                                .height(36.dp)
+                                .padding(top = 8.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(70.dp))
                         Text(text = "Constantio", fontSize = 36.sp,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
@@ -215,12 +245,12 @@ fun MainScreen(
                         thickness = 2.dp,
                         color = LightRed_Palette,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                    )
+                    )/*
                     LazyRow(modifier = Modifier.fillMaxWidth()){
                         items(listOfProfiles){ profile ->
                             StoryIcon(profile = profile)
                         }
-                    }
+                    }*/
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -232,6 +262,7 @@ fun MainScreen(
                     }
                 }
             }
+            /*TODO move to profile screen
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -246,7 +277,9 @@ fun MainScreen(
                     Text(text = "Click me", fontSize = 20.sp, color = Color.White)
                 }
             }
+            */
         }
+        /* TODO move to profile screen
         items(selectedImageUris){
                 selectedImageUri ->
             AsyncImage(
@@ -259,6 +292,7 @@ fun MainScreen(
                 contentScale = ContentScale.Crop
             )
         }
+        */
     }
 }
 
@@ -270,22 +304,45 @@ fun StoryIcon(
         modifier = Modifier
             .padding(16.dp)
     ) {
-        Image(painter = painterResource(id = R.drawable.profpic1/*profile.icon*/),
-            contentDescription = "Profile Picture",
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(70.dp)
-                .clip(CircleShape)
-                .border(2.dp, Brownish_Palette, CircleShape)
-                .clickable(
-                    onClick = {
-                        /*
-                        for (story in profile.listOfStories){
-                            println("Story")
+        val imageUri = profile.icon
+        if(imageUri != null){
+            Image(painter = rememberAsyncImagePainter(profile.icon),
+                contentDescription = "Profile Picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Brownish_Palette, CircleShape)
+                    .clickable(
+                        onClick = {
+                            /*
+                            for (story in profile.listOfStories){
+                                println("Story")
+                            }
+                            */
                         }
-                        */
-                    }
-                )
-        )
+                    )
+            )
+        }else{
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Default Profile Picture",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, Brownish_Palette, CircleShape)
+                    .clickable(
+                        onClick = {
+                            /*
+                            for (story in profile.listOfStories){
+                                println("Story")
+                            }
+                            */
+                        }
+                    )
+            )
+        }
+
     }
 }
