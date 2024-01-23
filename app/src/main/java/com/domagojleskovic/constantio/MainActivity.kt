@@ -29,10 +29,6 @@ import com.google.firebase.storage.StorageReference
 
 
 class MainActivity : ComponentActivity() {
-    private val database: DatabaseReference = Firebase.database.reference
-    private lateinit var imageUri : Uri
-    private lateinit var databaseReference: DatabaseReference
-    private lateinit var storageReference: StorageReference
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Firebase.initialize(this)

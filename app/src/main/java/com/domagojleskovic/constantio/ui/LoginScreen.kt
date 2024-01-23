@@ -156,17 +156,9 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
-                        if (email.isEmpty() || password.isEmpty()) {
-                            alertDialogTitle = "Error with input"
-                            alertDialogMessage =
-                                "Oops. It looks like you forgot to enter either the email or password. " +
-                                        "Please check email and password input "
-                            openAlertDialog = true
-                        } else {
                             emailPasswordManager.signIn(email,password){
                                 navController.navigate("main_screen")
                             }
-                        }
                     },
                     modifier = Modifier.width(150.dp),
                     colors = ButtonDefaults.buttonColors(

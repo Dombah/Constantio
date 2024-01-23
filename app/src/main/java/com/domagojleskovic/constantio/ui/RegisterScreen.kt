@@ -147,20 +147,9 @@ fun RegisterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
                     onClick = {
-                        if(email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()){
-                            alertDialogTitle = "Error with input"
-                            alertDialogMessage = "Oops. It looks like you forgot to enter either the email or password. " +
-                                    "Please check email and password input "
-                            openAlertDialog = true
-                        }else if(password != confirmPassword){
-                            alertDialogTitle = "Password mismatch error"
-                            alertDialogMessage = "The two passwords do not match. Please try again"
-                            openAlertDialog = true
-                        }else{
                             emailPasswordManager.createAccount(email,password){
                                 navController.navigate("main_screen")
                             }
-                        }
                     },
                     modifier = Modifier.width(150.dp),
                     colors = ButtonDefaults.buttonColors(

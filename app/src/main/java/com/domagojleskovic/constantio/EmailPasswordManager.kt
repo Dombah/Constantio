@@ -11,6 +11,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -36,6 +39,21 @@ class EmailPasswordManager(
     fun getDBO() : DatabaseReference{
         return database
     }
+
+    private fun displayAuthenticationException(exception: Exception){
+        try {
+            throw exception
+        } catch (e: FirebaseAuthUserCollisionException) {
+            Toast.makeText(context, "User with given email already exists", Toast.LENGTH_SHORT).show()
+        } catch (e: FirebaseAuthWeakPasswordException) {
+            Toast.makeText(context, "Password too weak", Toast.LENGTH_SHORT).show()
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
+            Toast.makeText(context, "Invalid email", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            Toast.makeText(context, "Unknown error while authenticating user", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun createAccount(email: String, password: String, onSuccess: () -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -43,14 +61,11 @@ class EmailPasswordManager(
                     Log.d(TAG, "createUserWithEmail:success")
                     val user = auth.currentUser!!
                     writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email, onSuccess)
-                } else {
-                    Log.w(TAG, "createUserWithEmail:failure", task.exception)
-                    Toast.makeText(
-                        context,
-                        "Authentication failed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
                 }
+            }
+            .addOnFailureListener{
+                exception ->
+                displayAuthenticationException(exception)
             }
     }
     private fun writeNewUser(userId: String, name: String, email: String, onSuccess: () -> Unit) {
@@ -119,16 +134,12 @@ class EmailPasswordManager(
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser!!
                     onSuccess()
-                } else {
-                    Log.w(TAG, "signInWithEmail:failure", task.exception)
-                    Toast.makeText(
-                        context,
-                        "Authentication failed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
                 }
             }
-        // [END sign_in_with_email]
+            .addOnFailureListener{
+                exception ->
+                displayAuthenticationException(exception)
+            }
     }
 
     private fun sendEmailVerification() {
