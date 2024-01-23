@@ -2,7 +2,6 @@ package com.domagojleskovic.constantio.ui
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +36,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -51,11 +48,7 @@ import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.IgnoreExtraProperties
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
 import java.util.Date
 
 @IgnoreExtraProperties
@@ -64,7 +57,7 @@ data class Profile(
     val userId : String? = null,
     var name : String? = null,
     var email : String? = null,
-    var listOfPictures : List<Int> = listOf(),
+    var listOfPictures : List<Uri?> = listOf(),
     var listOfStories : List<Int> = listOf(),
     var listOfFollowedProfiles : List<Profile> = listOf()
 ){
@@ -129,17 +122,6 @@ fun MainScreen(
         Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com"),
         Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com")
     )
-        /*TODO move to profile screen
-        var selectedImageUris by remember {
-            mutableStateOf<List<Uri?>>(emptyList())
-        }
-        val photoPickerLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.PickMultipleVisualMedia(),
-            onResult = {
-                selectedImageUris = it
-            }
-        )
-        */
     var profile by remember { mutableStateOf<Profile?>(null) }
     val userId = emailPasswordManager.getCurrentUser()?.uid
     profile = emailPasswordManager.profile
@@ -231,33 +213,13 @@ fun MainScreen(
                 }
             }
             /*TODO move to profile screen
-            Column(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Button(
-                    onClick = {
-                        photoPickerLauncher.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Text(text = "Click me", fontSize = 20.sp, color = Color.White)
-                }
-            }
+
             */
         }
         /* TODO move to profile screen
         items(selectedImageUris){
                 selectedImageUri ->
-            AsyncImage(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                model = selectedImageUri,
-                contentDescription = null,
-                contentScale = ContentScale.Crop
+
             )
         }
         */

@@ -2,7 +2,6 @@ package com.domagojleskovic.constantio.ui
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -42,7 +41,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -50,8 +48,6 @@ import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-
-@Preview(showBackground = true)
 @Composable
 fun RegisterScreen(
     emailPasswordManager: EmailPasswordManager,
@@ -61,10 +57,7 @@ fun RegisterScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
-    var openAlertDialog by remember { mutableStateOf(false)}
     var passwordVisible by remember { mutableStateOf(false)}
-    var alertDialogTitle by remember { mutableStateOf("") }
-    var alertDialogMessage by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier

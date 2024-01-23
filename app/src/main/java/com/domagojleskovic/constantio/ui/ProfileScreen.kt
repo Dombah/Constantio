@@ -1,8 +1,13 @@
 package com.domagojleskovic.constantio.ui
 
+import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,38 +17,37 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.ValueEventListener
-import com.google.firebase.database.getValue
-
 
 @Composable
 fun ProfileScreen(
@@ -52,6 +56,23 @@ fun ProfileScreen(
 ) {
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
+
+    var selectedImageUris by remember {
+        mutableStateOf<List<Uri?>>(emptyList())
+    }
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = {
+            selectedImageUris = it
+        }
+    )
+    var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
+
+    LaunchedEffect(selectedImageUris){
+        listOfPictures = selectedImageUris
+        profile?.listOfPictures = selectedImageUris
+        Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -169,16 +190,31 @@ fun ProfileScreen(
                                 ) {
                                     Text(text = "Message")
                                 }
+                            }else{
+                                Column(
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            photoPickerLauncher.launch(
+                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                            )
+                                        },
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Text(text = "Click me", fontSize = 20.sp, color = Color.White)
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
-            /*
-            if(profile.listOfPictures.isEmpty()){
+            if(listOfPictures.isEmpty()){
                 Row (
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .padding(top = 36.dp, end = 32.dp),
                     horizontalArrangement = Arrangement.Center
                 ){
@@ -192,28 +228,25 @@ fun ProfileScreen(
                 }
             }
             else{
-                EasyGrid(nColumns = 3, items = profile.listOfPictures) {
-                    Image(
-                        painter = painterResource(id = it),
+                EasyGrid(nColumns = 3, items = listOfPictures) {
+                    imageUri ->
+                    AsyncImage(
+                        model = imageUri,
                         contentDescription = null,
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .padding(2.dp)
-                            .clickable(
-                                onClick = {
-                                    /*TODO - Go to post screen*/
-                                }
-                            )
+                            .size(160.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                     )
                 }
             }
-            */
         }
     }
 }
 
 @Composable
 fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit){
-    Column(){
+    Column{
         for(i in items.indices step nColumns){
             Row{
                 for(j in 0 until nColumns){
@@ -221,6 +254,7 @@ fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit
                         Box(
                             contentAlignment = Alignment.TopCenter,
                             modifier = Modifier.weight(1f)
+                                .padding(4.dp)
                         ){
                             content(items[i+j])
                         }}else{
