@@ -1,53 +1,88 @@
 package com.domagojleskovic.constantio.ui
 
-import androidx.annotation.DrawableRes
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.getValue
 
 
 @Composable
 fun ProfileScreen(
-    profile : Profile
+    emailPasswordManager : EmailPasswordManager,
+    userId: String?
 ) {
+    var profile by remember { mutableStateOf<Profile?>(null) }
+
+    DisposableEffect(userId) {
+        val userListener = emailPasswordManager.getDBO()
+            .child("users")
+            .child(userId!!)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val userProfile = snapshot.getValue<Profile>()
+                    userProfile?.let {
+                        emailPasswordManager.getCurrentUserImageUri {
+                                uri ->
+                            if(uri != null){
+                                val updatedProfile = userProfile.copy(icon = uri)
+                                profile = updatedProfile
+                            }
+                            else{
+                                //
+                            }
+                        }
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error getting data", error.toException())
+                }
+            })
+        onDispose {
+            emailPasswordManager.getDBO()
+                .child("users")
+                .child(userId)
+                .removeEventListener(userListener)
+        }
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -107,17 +142,18 @@ fun ProfileScreen(
                         Row (
                             modifier = Modifier.fillMaxWidth()
                         ){
-                            StoryIcon(profile = profile)
+                            //StoryIcon(profile = profile)
                             Column (
                                 modifier = Modifier.padding(16.dp)
                             ){
+                                /*
                                 Text(
-                                    text = profile.name as String, fontSize = 28.sp,
+                                    text = profile?.name as String, fontSize = 28.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
                                     modifier = Modifier.padding(8.dp)
-                                )
+                                )*/
                                 //Text(
                                 //    text = "Posts: ${profile.listOfPictures.size}", fontSize = 20.sp,
                                 //    fontFamily = FontFamily.Cursive,

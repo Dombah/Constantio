@@ -11,8 +11,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
+import com.google.firebase.database.getValue
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.io.File
@@ -32,14 +36,13 @@ class EmailPasswordManager(
     fun getDBO() : DatabaseReference{
         return database
     }
-    fun createAccount(email: String, password: String) {
+    fun createAccount(email: String, password: String, onSuccess: () -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d(TAG, "createUserWithEmail:success")
                     val user = auth.currentUser!!
-                    writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email)
-                    updateUI(user)
+                    writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email, onSuccess)
                 } else {
                     Log.w(TAG, "createUserWithEmail:failure", task.exception)
                     Toast.makeText(
@@ -47,11 +50,10 @@ class EmailPasswordManager(
                         "Authentication failed.",
                         Toast.LENGTH_SHORT,
                     ).show()
-                    updateUI(null)
                 }
             }
     }
-    private fun writeNewUser(userId: String, name: String, email: String) {
+    private fun writeNewUser(userId: String, name: String, email: String, onSuccess: () -> Unit) {
         val user = Profile(userId = userId, name = name, email = email)
         database.child("users").child(userId).setValue(user)
             .addOnSuccessListener {
@@ -60,6 +62,7 @@ class EmailPasswordManager(
                 storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
                 storage.putFile(imageUri).addOnSuccessListener {
                     Toast.makeText(context, "Successfully created user", Toast.LENGTH_SHORT).show()
+                    onSuccess()
                 }.addOnFailureListener{
                     Toast.makeText(context, "Failed created user", Toast.LENGTH_SHORT).show()
                 }
@@ -75,10 +78,8 @@ class EmailPasswordManager(
         if(user != null) {
             val localFile = File.createTempFile("images", ".png")
             storage.getFile(localFile).addOnSuccessListener {
-                // Local temp file has been created
                 callback(Uri.fromFile(localFile))
             }.addOnFailureListener {
-                // Handle any errors
                 callback(null)
             }
         }
@@ -86,13 +87,38 @@ class EmailPasswordManager(
             callback(null)
         }
     }
-    fun signIn(email: String, password: String) {
+    fun observeUserProfile(callback: (Profile?) -> Unit) {
+        val userId = getCurrentUser()?.uid
+        val userListener = getDBO()
+            .child("users")
+            .child(userId!!)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val userProfile = snapshot.getValue<Profile>()
+                    userProfile?.let {
+                        getCurrentUserImageUri { uri ->
+                            if (uri != null) {
+                                val updatedProfile = userProfile.copy(icon = uri)
+                                callback(updatedProfile)
+                            } else {
+                                callback(null)
+                            }
+                        }
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error getting data",)
+                    callback(null)
+                }
+            })
+    }
+    fun signIn(email: String, password: String, onSuccess: () -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser!!
-                    updateUI(user)
+                    onSuccess()
                 } else {
                     Log.w(TAG, "signInWithEmail:failure", task.exception)
                     Toast.makeText(
@@ -100,7 +126,6 @@ class EmailPasswordManager(
                         "Authentication failed.",
                         Toast.LENGTH_SHORT,
                     ).show()
-                    updateUI(null)
                 }
             }
         // [END sign_in_with_email]
@@ -114,18 +139,6 @@ class EmailPasswordManager(
                 // Email Verification sent
             }
         // [END send_email_verification]
-    }
-
-    private fun updateUI(user: FirebaseUser?)
-    {
-        if(user != null)
-        {
-            navController.navigate("main_screen")
-        }
-        else{
-            Toast.makeText(context, "User with given credentials not found", Toast.LENGTH_SHORT)
-                .show()
-        }
     }
 
     private fun reload()

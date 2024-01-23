@@ -44,6 +44,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
@@ -52,7 +53,8 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 @Preview(showBackground = true)
 @Composable
 fun RegisterScreen(
-    emailPasswordManager: EmailPasswordManager
+    emailPasswordManager: EmailPasswordManager,
+    navController :NavController
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -155,7 +157,9 @@ fun RegisterScreen(
                             alertDialogMessage = "The two passwords do not match. Please try again"
                             openAlertDialog = true
                         }else{
-                            emailPasswordManager.createAccount(email,password)
+                            emailPasswordManager.createAccount(email,password){
+                                navController.navigate("main_screen")
+                            }
                         }
                     },
                     modifier = Modifier.width(150.dp),

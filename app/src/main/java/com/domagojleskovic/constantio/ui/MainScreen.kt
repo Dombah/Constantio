@@ -1,11 +1,7 @@
 package com.domagojleskovic.constantio.ui
 
-import android.content.ContentResolver
 import android.net.Uri
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,10 +23,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -44,16 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
@@ -64,7 +55,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.IgnoreExtraProperties
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.getValue
-import kotlinx.coroutines.processNextEventInCurrentThread
 import java.util.Date
 
 @IgnoreExtraProperties
@@ -122,7 +112,8 @@ val listOfProfiles = mutableListOf<Profile>(
 
 @Composable
 fun MainScreen(
-    onNavigateProfileScreen : () -> Unit,
+    onNavigateProfileScreen : (Profile) -> Unit,
+    navController : NavController,
     emailPasswordManager: EmailPasswordManager
 ) {
     val context = LocalContext.current
@@ -218,20 +209,16 @@ fun MainScreen(
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.End
                     ){
-                        Image(
-                            painter = rememberAsyncImagePainter(profile?.icon),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .width(36.dp)
-                                .height(36.dp)
-                                .padding(top = 8.dp)
-                                .clickable (
-                                    onClick = {
-                                        onNavigateProfileScreen()
-                                    }
-                                ),
+                        Image(painter = rememberAsyncImagePainter(profile?.icon),
+                            contentDescription = "Profile Picture",
                             contentScale = ContentScale.Crop,
-
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .border(2.dp, Brownish_Palette, CircleShape)
+                                .clickable {
+                                    profile?.let { onNavigateProfileScreen(it) }
+                                }
                         )
                         Spacer(modifier = Modifier.width(70.dp))
                         Text(text = "Constantio", fontSize = 36.sp,
@@ -240,24 +227,28 @@ fun MainScreen(
                             color = Color.White)
                         Spacer(modifier = Modifier.width(70.dp))
                         Image(
-                            painter = painterResource(id = R.drawable.send_red),
+                            painter = painterResource(id = android.R.drawable.ic_menu_search),
                             contentDescription = null,
                             modifier = Modifier
-                                .width(36.dp)
-                                .height(36.dp)
+                                .size(40.dp)
                                 .padding(top = 8.dp)
+                                .clickable(
+                                    onClick = {
+                                        // TODO Search profiles in database
+                                    }
+                                )
                         )
                     }
                     Divider(
                         thickness = 2.dp,
                         color = LightRed_Palette,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                    )/*
+                    )
                     LazyRow(modifier = Modifier.fillMaxWidth()){
                         items(listOfProfiles){ profile ->
                             StoryIcon(profile = profile)
                         }
-                    }*/
+                    }
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -305,13 +296,13 @@ fun MainScreen(
 
 @Composable
 fun StoryIcon(
-    profile : Profile
+    profile: Profile?,
 ) {
     Column(
         modifier = Modifier
             .padding(16.dp)
     ) {
-        val imageUri = profile.icon
+        val imageUri = profile?.icon
         if(imageUri != null){
             Image(painter = rememberAsyncImagePainter(profile.icon),
                 contentDescription = "Profile Picture",

@@ -46,6 +46,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
@@ -55,6 +56,7 @@ import com.domagojleskovic.constantio.ui.theme.Red_Palette
 @Composable
 fun LoginScreen(
     onNavigateRegisterScreen: () -> Unit,
+    navController: NavController,
     emailPasswordManager: EmailPasswordManager
 ) {
     var openAlertDialog by remember { mutableStateOf(false) }
@@ -161,7 +163,9 @@ fun LoginScreen(
                                         "Please check email and password input "
                             openAlertDialog = true
                         } else {
-                            emailPasswordManager.signIn(email,password)
+                            emailPasswordManager.signIn(email,password){
+                                navController.navigate("main_screen")
+                            }
                         }
                     },
                     modifier = Modifier.width(150.dp),

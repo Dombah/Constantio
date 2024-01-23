@@ -49,15 +49,25 @@ class MainActivity : ComponentActivity() {
                         composable("login") {
                             LoginScreen(
                                 onNavigateRegisterScreen = { navController.navigate("register")},
+                                navController,
                                 emailPasswordManager
                             )
                         }
-                        composable("register") { RegisterScreen(emailPasswordManager) }
+                        composable("register") { RegisterScreen(emailPasswordManager, navController) }
                         composable("main_screen") { MainScreen(
-                            onNavigateProfileScreen = {navController.navigate("profile")},
+                            onNavigateProfileScreen = { profile ->
+                                navController.navigate("profile/${profile.userId}")
+                            },
+                            navController,
                             emailPasswordManager
                         ) }
-                        composable("profile") { ProfileScreen(profile = Profile(Uri.parse("android.resource://${packageName}/${R.drawable.logo}"),"null",  "Marko", "Markic@gmail.com"))}
+                        composable("profile/{userId}"){
+                            navBackStackEntry ->
+                            ProfileScreen(
+                                emailPasswordManager,
+                                userId = navBackStackEntry.arguments?.getString("userId"),
+                            )
+                        }
                     }
                 }
             }
