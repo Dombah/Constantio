@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -64,6 +65,7 @@ fun LoginScreen(
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
+    var progressBarLoading by remember { mutableStateOf(false)}
 
     Column(
         modifier = Modifier
@@ -83,6 +85,15 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
             )
             {
+                if(progressBarLoading){
+                    CircularProgressIndicator(
+                        trackColor = Color.White
+                    )
+                }
+                else{
+                    // Compensate for the whitespace
+                    Spacer(modifier = Modifier.size(40.dp))
+                }
                 Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
                 Image(
                     painter = painterResource(id = R.drawable.logo),
@@ -154,8 +165,10 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(24.dp))
                 Button(
                     onClick = {
+                            progressBarLoading = true
                             emailPasswordManager.signIn(email,password){
                                 navController.navigate("main_screen")
+                                progressBarLoading = false
                             }
                     },
                     modifier = Modifier.width(150.dp),

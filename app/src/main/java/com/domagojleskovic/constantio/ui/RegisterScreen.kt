@@ -23,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -59,6 +60,7 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
     var passwordVisible by remember { mutableStateOf(false)}
+    var progressBarLoading by remember { mutableStateOf(false)}
 
     Column(
         modifier = Modifier
@@ -67,6 +69,15 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if(progressBarLoading){
+            CircularProgressIndicator(
+                trackColor = Color.White
+            )
+        }
+        else{
+            // Compensate for the whitespace
+            Spacer(modifier = Modifier.size(40.dp))
+        }
         Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
         Image(
             painter = painterResource(id = R.drawable.logo),
@@ -134,8 +145,10 @@ fun RegisterScreen(
                 if(confirmPassword != password){
                     Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
                 }else {
+                    progressBarLoading = true
                     emailPasswordManager.createAccount(email, password) {
                         navController.navigate("main_screen")
+                        progressBarLoading = false
                     }
                 }
             },
