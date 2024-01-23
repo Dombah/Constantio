@@ -1,8 +1,6 @@
 package com.domagojleskovic.constantio
 
-import android.net.Uri
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,16 +14,9 @@ import com.domagojleskovic.constantio.ui.theme.ConstantioTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.domagojleskovic.constantio.ui.LoginScreen
-import com.domagojleskovic.constantio.ui.Profile
 import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.database
 import com.google.firebase.initialize
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageReference
 
 
 class MainActivity : ComponentActivity() {
@@ -49,7 +40,7 @@ class MainActivity : ComponentActivity() {
                                 emailPasswordManager
                             )
                         }
-                        composable("register") { RegisterScreen(emailPasswordManager, navController) }
+                        composable("register") { RegisterScreen(emailPasswordManager, navController, this@MainActivity) }
                         composable("main_screen") { MainScreen(
                             onNavigateProfileScreen = { profile ->
                                 navController.navigate("profile/${profile.userId}")

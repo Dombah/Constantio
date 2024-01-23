@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.DataSnapshot
@@ -41,16 +42,14 @@ class EmailPasswordManager(
     }
 
     private fun displayAuthenticationException(exception: Exception){
-        try {
+        try{
             throw exception
-        } catch (e: FirebaseAuthUserCollisionException) {
-            Toast.makeText(context, "User with given email already exists", Toast.LENGTH_SHORT).show()
-        } catch (e: FirebaseAuthWeakPasswordException) {
+        }catch(e : FirebaseAuthWeakPasswordException){
             Toast.makeText(context, "Password too weak", Toast.LENGTH_SHORT).show()
-        } catch (e: FirebaseAuthInvalidCredentialsException) {
-            Toast.makeText(context, "Invalid email", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            Toast.makeText(context, "Unknown error while authenticating user", Toast.LENGTH_SHORT).show()
+        }catch(e : FirebaseAuthInvalidCredentialsException){
+            Toast.makeText(context, "Email address is invalid", Toast.LENGTH_SHORT).show()
+        }catch(e : FirebaseAuthUserCollisionException){
+            Toast.makeText(context, "User with this email already exists", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -131,14 +130,12 @@ class EmailPasswordManager(
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d(TAG, "signInWithEmail:success")
                     val user = auth.currentUser!!
                     onSuccess()
                 }
             }
             .addOnFailureListener{
-                exception ->
-                displayAuthenticationException(exception)
+                Toast.makeText(context, "User either doesn't exist or the password is wrong", Toast.LENGTH_SHORT).show()
             }
     }
 
