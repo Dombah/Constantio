@@ -33,6 +33,7 @@ class EmailPasswordManager(
     private var auth: FirebaseAuth = Firebase.auth
     private val database: DatabaseReference = Firebase.database.reference
     private lateinit var storage : StorageReference
+    lateinit var profile : Profile
 
     fun getCurrentUser() : FirebaseUser?{
         return auth.currentUser
@@ -75,7 +76,7 @@ class EmailPasswordManager(
                 val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
                 storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
                 storage.putFile(imageUri).addOnSuccessListener {
-                    Toast.makeText(context, "Successfully created user", Toast.LENGTH_SHORT).show()
+                    profile = Profile(imageUri, name, email)
                     onSuccess()
                 }.addOnFailureListener{
                     Toast.makeText(context, "Failed created user", Toast.LENGTH_SHORT).show()
@@ -103,7 +104,7 @@ class EmailPasswordManager(
     }
     fun observeUserProfile(callback: (Profile?) -> Unit) {
         val userId = getCurrentUser()?.uid
-        val userListener = getDBO()
+             getDBO()
             .child("users")
             .child(userId!!)
             .addValueEventListener(object : ValueEventListener {
@@ -115,6 +116,7 @@ class EmailPasswordManager(
                                 val updatedProfile = userProfile.copy(icon = uri)
                                 callback(updatedProfile)
                             } else {
+                                Log.e("Callback error", "Why you go here man?")
                                 callback(null)
                             }
                         }
@@ -131,7 +133,10 @@ class EmailPasswordManager(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser!!
-                    onSuccess()
+                    observeUserProfile {
+                        profile = it!!
+                        onSuccess()
+                    }
                 }
             }
             .addOnFailureListener{

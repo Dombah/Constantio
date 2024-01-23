@@ -174,16 +174,6 @@ fun RegisterScreen(
             }
 
         }
-        when {
-            openAlertDialog -> {
-                EmailPasswordAlertDialog(
-                    onDismissRequest = { openAlertDialog = false },
-                    onConfirmation = { openAlertDialog = false },
-                    dialogTitle = alertDialogTitle,
-                    dialogText = alertDialogMessage
-                )
-            }
-        }
     }
 }
 

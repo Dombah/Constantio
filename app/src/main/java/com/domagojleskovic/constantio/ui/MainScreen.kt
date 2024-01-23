@@ -1,5 +1,6 @@
 package com.domagojleskovic.constantio.ui
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
 import androidx.annotation.DrawableRes
@@ -114,9 +115,9 @@ val listOfProfiles = mutableListOf<Profile>(
 fun MainScreen(
     onNavigateProfileScreen : (Profile) -> Unit,
     navController : NavController,
-    emailPasswordManager: EmailPasswordManager
+    emailPasswordManager: EmailPasswordManager,
+    context: Context
 ) {
-    val context = LocalContext.current
     val listOfProfiles = mutableListOf<Profile>(
         Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null",  "Marko", "Markic@gmail.com"),
         Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"), "null", "Constantin","Markic@gmail.com"),
@@ -141,38 +142,7 @@ fun MainScreen(
         */
     var profile by remember { mutableStateOf<Profile?>(null) }
     val userId = emailPasswordManager.getCurrentUser()?.uid
-
-    DisposableEffect(userId) {
-        val userListener = emailPasswordManager.getDBO()
-            .child("users")
-            .child(userId!!)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userProfile = snapshot.getValue<Profile>()
-                   userProfile?.let {
-                        emailPasswordManager.getCurrentUserImageUri {
-                            uri ->
-                            if(uri != null){
-                                val updatedProfile = userProfile.copy(icon = uri)
-                                profile = updatedProfile
-                            }
-                            else{
-                                //
-                            }
-                        }
-                    }
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("FirebaseError", "Error getting data", error.toException())
-                }
-            })
-        onDispose {
-            emailPasswordManager.getDBO()
-                .child("users")
-                .child(userId)
-                .removeEventListener(userListener)
-        }
-    }
+    profile = emailPasswordManager.profile
     val scrollState = rememberLazyListState()
     LazyColumn(
         modifier = Modifier
@@ -253,7 +223,7 @@ fun MainScreen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Activity", fontSize = 36.sp,
+                        Text(text = "Activity:", fontSize = 36.sp,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)

@@ -51,38 +51,7 @@ fun ProfileScreen(
     userId: String?
 ) {
     var profile by remember { mutableStateOf<Profile?>(null) }
-
-    DisposableEffect(userId) {
-        val userListener = emailPasswordManager.getDBO()
-            .child("users")
-            .child(userId!!)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userProfile = snapshot.getValue<Profile>()
-                    userProfile?.let {
-                        emailPasswordManager.getCurrentUserImageUri {
-                                uri ->
-                            if(uri != null){
-                                val updatedProfile = userProfile.copy(icon = uri)
-                                profile = updatedProfile
-                            }
-                            else{
-                                //
-                            }
-                        }
-                    }
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("FirebaseError", "Error getting data", error.toException())
-                }
-            })
-        onDispose {
-            emailPasswordManager.getDBO()
-                .child("users")
-                .child(userId)
-                .removeEventListener(userListener)
-        }
-    }
+    profile = emailPasswordManager.profile
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -142,25 +111,24 @@ fun ProfileScreen(
                         Row (
                             modifier = Modifier.fillMaxWidth()
                         ){
-                            //StoryIcon(profile = profile)
+                            StoryIcon(profile = profile)
                             Column (
                                 modifier = Modifier.padding(16.dp)
                             ){
-                                /*
                                 Text(
                                     text = profile?.name as String, fontSize = 28.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White,
                                     modifier = Modifier.padding(8.dp)
-                                )*/
-                                //Text(
-                                //    text = "Posts: ${profile.listOfPictures.size}", fontSize = 20.sp,
-                                //    fontFamily = FontFamily.Cursive,
-                                //    fontWeight = FontWeight.W700,
-                                //    color = Color.White,
-                                //    modifier = Modifier.padding(8.dp)
-                                //)
+                                )
+                                Text(
+                                    text = "Posts: ${profile?.listOfPictures?.size}", fontSize = 20.sp,
+                                    fontFamily = FontFamily.Cursive,
+                                    fontWeight = FontWeight.W700,
+                                    color = Color.White,
+                                    modifier = Modifier.padding(8.dp)
+                                )
                                 Text(
                                     text = "Followers: 0", fontSize = 20.sp,
                                     fontFamily = FontFamily.Cursive,
@@ -182,22 +150,25 @@ fun ProfileScreen(
                                 .fillMaxWidth()
                                 .padding(start = 16.dp)
                         ){
-                            Button(
-                                onClick = { /*TODO*/ },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = LightRed_Palette
-                                )
-                            ) {
-                                Text(text = "Follow")
-                            }
-                            Spacer(modifier = Modifier.padding(8.dp))
-                            Button(
-                                onClick = { /*TODO*/ },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = LightRed_Palette
-                                )
-                            ) {
-                                Text(text = "Message")
+                            if(profile?.userId != emailPasswordManager.getCurrentUser()?.uid)
+                            {
+                                Button(
+                                    onClick = { /*TODO*/ },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightRed_Palette
+                                    )
+                                ) {
+                                    Text(text = "Follow")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(
+                                    onClick = { /*TODO*/ },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightRed_Palette
+                                    )
+                                ) {
+                                    Text(text = "Message")
+                                }
                             }
                         }
                     }

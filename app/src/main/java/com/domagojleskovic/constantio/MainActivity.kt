@@ -46,7 +46,8 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate("profile/${profile.userId}")
                             },
                             navController,
-                            emailPasswordManager
+                            emailPasswordManager,
+                            this@MainActivity
                         ) }
                         composable("profile/{userId}"){
                             navBackStackEntry ->

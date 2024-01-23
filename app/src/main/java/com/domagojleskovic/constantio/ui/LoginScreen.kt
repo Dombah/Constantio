@@ -64,10 +64,6 @@ fun LoginScreen(
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
 
-
-    var alertDialogTitle by remember { mutableStateOf("") }
-    var alertDialogMessage by remember { mutableStateOf("") }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -189,46 +185,4 @@ fun LoginScreen(
         }
 
     }
-    when {
-        openAlertDialog -> {
-            EmailPasswordAlertDialog(
-                onDismissRequest = { openAlertDialog = false },
-                onConfirmation = { openAlertDialog = false },
-                dialogTitle = alertDialogTitle,
-                dialogText = alertDialogMessage
-            )
-
-        }
-    }
 }
-
-@Composable
-fun EmailPasswordAlertDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-) {
-    AlertDialog(
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation()
-                }
-            ) {
-                Text("Confirm")
-            }
-        },
-    )
-}
-
-
