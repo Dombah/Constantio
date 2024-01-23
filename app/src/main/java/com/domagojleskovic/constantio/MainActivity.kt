@@ -14,6 +14,7 @@ import com.domagojleskovic.constantio.ui.theme.ConstantioTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.domagojleskovic.constantio.ui.ForgotPasswordScreen
 import com.domagojleskovic.constantio.ui.LoginScreen
 import com.google.firebase.Firebase
 import com.google.firebase.initialize
@@ -35,6 +36,7 @@ class MainActivity : ComponentActivity() {
                     NavHost(navController = navController, startDestination = "login") {
                         composable("login") {
                             LoginScreen(
+                                onNavigateForgotPasswordScreen = { navController.navigate("forgot_password")},
                                 onNavigateRegisterScreen = { navController.navigate("register")},
                                 navController,
                                 emailPasswordManager
@@ -54,6 +56,12 @@ class MainActivity : ComponentActivity() {
                             ProfileScreen(
                                 emailPasswordManager,
                                 userId = navBackStackEntry.arguments?.getString("userId"),
+                            )
+                        }
+                        composable("forgot_password"){
+                            ForgotPasswordScreen(
+                                navController = navController,
+                                emailPasswordManager = emailPasswordManager
                             )
                         }
                     }

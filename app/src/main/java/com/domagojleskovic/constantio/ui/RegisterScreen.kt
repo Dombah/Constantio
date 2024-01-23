@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -66,107 +67,86 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Card(
-            modifier = Modifier.width(350.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = DarkBlue_Palette
-            )
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            )
-            {
-                Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .width(100.dp)
-                        .height(100.dp)
-                )
-                Text(text = "Constantio", fontSize = 48.sp,
-                    fontFamily = FontFamily.Cursive,
-                    fontWeight = FontWeight.W700,
-                    color = Color.White)
-                Spacer(modifier = Modifier.padding(top = 8.dp))
-                OutlinedTextField(
-                    value = email, onValueChange = {
-                        email = it
-                    },
-                    label = {
-                        Text("Email", color = Color.White)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(color = Color.White),
+        Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = null,
+            modifier = Modifier
+                .size(100.dp)
+        )
+        Text(text = "Constantio", fontSize = 48.sp,
+            fontFamily = FontFamily.Cursive,
+            fontWeight = FontWeight.W700,
+            color = Color.White)
+        Spacer(modifier = Modifier.padding(top = 8.dp))
+        OutlinedTextField(
+            value = email, onValueChange = {
+                email = it
+            },
+            label = {
+                Text("Email", color = Color.White)
+            },
+            shape = RoundedCornerShape(16.dp),
+            textStyle = TextStyle(color = Color.White),
+        )
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+            },
+            label = {
+                Text("Password", color = Color.White)
+            },
+            shape = RoundedCornerShape(16.dp),
+            textStyle = TextStyle(color = Color.White),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                val image = if (passwordVisible)
+                    Icons.Filled.Visibility
+                else Icons.Filled.VisibilityOff
+                val description = if (passwordVisible) "Hide password" else "Show password"
+                IconButton(onClick = {passwordVisible = !passwordVisible}){
+                    Icon(
+                        imageVector  = image,
+                        description,
+                        tint = Color.White
                     )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                    },
-                    label = {
-                        Text("Password", color = Color.White)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(color = Color.White),
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        val image = if (passwordVisible)
-                            Icons.Filled.Visibility
-                        else Icons.Filled.VisibilityOff
-                        val description = if (passwordVisible) "Hide password" else "Show password"
-                        IconButton(onClick = {passwordVisible = !passwordVisible}){
-                            Icon(
-                                imageVector  = image,
-                                description,
-                                tint = Color.White
-                            )
-                        }
-                    }
-                )
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = {
-                        confirmPassword = it
-                    },
-                    label = {
-                        Text("Confirm Password: ", color = Color.White)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(color = Color.White),
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = {
-                        if(confirmPassword != password){
-                            Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
-                        }else {
-                            emailPasswordManager.createAccount(email, password) {
-                                navController.navigate("main_screen")
-                            }
-                        }
-                    },
-                    modifier = Modifier.width(150.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = LightRed_Palette
-                    )
-                ) {
-                    Text("Sign Up", fontSize = 16.sp)
-                }
-                Spacer(modifier = Modifier.height(64.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-
                 }
             }
-
+        )
+        OutlinedTextField(
+            value = confirmPassword,
+            onValueChange = {
+                confirmPassword = it
+            },
+            label = {
+                Text("Confirm Password: ", color = Color.White)
+            },
+            shape = RoundedCornerShape(16.dp),
+            textStyle = TextStyle(color = Color.White),
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(
+            onClick = {
+                if(confirmPassword != password){
+                    Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
+                }else {
+                    emailPasswordManager.createAccount(email, password) {
+                        navController.navigate("main_screen")
+                    }
+                }
+            },
+            modifier = Modifier.width(150.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = LightRed_Palette
+            )
+        ) {
+            Text("Sign Up", fontSize = 16.sp)
         }
+        Spacer(modifier = Modifier.size(97.dp))
     }
 }
 

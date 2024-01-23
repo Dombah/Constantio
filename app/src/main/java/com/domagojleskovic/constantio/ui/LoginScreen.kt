@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
@@ -55,11 +56,11 @@ import com.domagojleskovic.constantio.ui.theme.Red_Palette
 
 @Composable
 fun LoginScreen(
+    onNavigateForgotPasswordScreen: () -> Unit,
     onNavigateRegisterScreen: () -> Unit,
     navController: NavController,
     emailPasswordManager: EmailPasswordManager
 ) {
-    var openAlertDialog by remember { mutableStateOf(false) }
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
@@ -87,8 +88,7 @@ fun LoginScreen(
                     painter = painterResource(id = R.drawable.logo),
                     contentDescription = null,
                     modifier = Modifier
-                        .width(100.dp)
-                        .height(100.dp)
+                        .size(100.dp)
                 )
                 Text(
                     text = "Constantio", fontSize = 48.sp,
@@ -141,7 +141,9 @@ fun LoginScreen(
                 ) {
                     ClickableText(
                         text = AnnotatedString("Forgot Password?"),
-                        onClick = {/*TODO*/ },
+                        onClick = {
+                            onNavigateForgotPasswordScreen()
+                        },
                         style = TextStyle(
                             color = Red_Palette
                         ),

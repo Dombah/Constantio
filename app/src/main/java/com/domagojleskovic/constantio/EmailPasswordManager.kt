@@ -143,7 +143,19 @@ class EmailPasswordManager(
                 Toast.makeText(context, "User either doesn't exist or the password is wrong", Toast.LENGTH_SHORT).show()
             }
     }
-
+    fun resetPassword(email : String, onSuccess: () -> Unit){
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener{
+                task ->
+                if(task.isSuccessful){
+                    Toast.makeText(context, "Successfully send password reset request to your mail address", Toast.LENGTH_SHORT).show()
+                    onSuccess()
+                }
+            }
+            .addOnFailureListener{
+                Toast.makeText(context, "Failed sending password reset to email address", Toast.LENGTH_SHORT).show()
+            }
+    }
     private fun sendEmailVerification() {
         // [START send_email_verification]
         val user = auth.currentUser!!
