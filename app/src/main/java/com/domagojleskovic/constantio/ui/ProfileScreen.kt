@@ -37,9 +37,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -69,8 +71,13 @@ fun ProfileScreen(
     var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
 
     LaunchedEffect(selectedImageUris){
-        listOfPictures = selectedImageUris
-        profile?.listOfPictures = selectedImageUris
+        /*
+        for (imageUri in selectedImageUris){
+            listOfPictures.plus(imageUri)
+            profile?.listOfPictures?.plus(imageUri)
+        }*/
+        listOfPictures = listOfPictures + selectedImageUris
+        profile?.listOfPictures = listOfPictures
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
     LazyColumn(
@@ -191,19 +198,26 @@ fun ProfileScreen(
                                     Text(text = "Message")
                                 }
                             }else{
-                                Column(
-                                    modifier = Modifier.fillMaxSize()
+                                Button(
+                                    onClick = {
+                                        photoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightRed_Palette
+                                    )
                                 ) {
-                                    Button(
-                                        onClick = {
-                                            photoPickerLauncher.launch(
-                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                            )
-                                        },
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Text(text = "Click me", fontSize = 20.sp, color = Color.White)
-                                    }
+                                    Text(text = "Add post")
+                                }
+                                Spacer(modifier = Modifier.padding(8.dp))
+                                Button(
+                                    onClick = { /*TODO*/ },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightRed_Palette
+                                    )
+                                ) {
+                                    Text(text = "Message")
                                 }
                             }
                         }
@@ -253,7 +267,8 @@ fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit
                     if(i + j < items.size){
                         Box(
                             contentAlignment = Alignment.TopCenter,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
                                 .padding(4.dp)
                         ){
                             content(items[i+j])

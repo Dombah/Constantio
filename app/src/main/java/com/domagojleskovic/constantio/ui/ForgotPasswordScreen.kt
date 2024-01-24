@@ -40,16 +40,10 @@ import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
-@Preview(showBackground = true)
-@Composable
-fun ForgotPasswordPreview() {
-    ForgotPasswordScreen(null, null)
-}
-
 @Composable
 fun ForgotPasswordScreen(
-    navController: NavController?,
-    emailPasswordManager: EmailPasswordManager?
+    navController: NavController,
+    emailPasswordManager: EmailPasswordManager
 ) {
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     Column(
