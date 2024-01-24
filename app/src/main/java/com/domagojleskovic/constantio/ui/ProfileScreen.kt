@@ -7,7 +7,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,11 +38,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -55,7 +52,7 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
 @Composable
 fun ProfileScreen(
-    emailPasswordManager : EmailPasswordManager,
+    emailPasswordManager: EmailPasswordManager,
     userId: String?
 ) {
     var profile by remember { mutableStateOf<Profile?>(null) }
@@ -80,18 +77,20 @@ fun ProfileScreen(
         }
     )
     var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
-    var progressBarLoading by remember { mutableStateOf(false)}
+    var progressBarLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(selectedImageUris){
+    LaunchedEffect(selectedImageUris) {
         listOfPictures = listOfPictures + selectedImageUris
         profile?.listOfPictures = listOfPictures
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
     LaunchedEffect(selectedImageUri) {
-        emailPasswordManager.writeUserProfilePicture(selectedImageUri as Uri) { uri ->
-            profile = profile!!.copy(icon = uri)
-            emailPasswordManager.profile = profile!!
-            progressBarLoading = false
+        if(selectedImageUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
+            emailPasswordManager.writeUserProfilePicture(selectedImageUri as Uri) { uri ->
+                profile = profile!!.copy(icon = uri)
+                emailPasswordManager.profile = profile!!
+                progressBarLoading = false
+            }
         }
     }
     LazyColumn(
@@ -100,6 +99,42 @@ fun ProfileScreen(
             .background(Brownish_Palette)
     ) {
         item {
+            if (progressBarLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(350.dp)
+                        .background(DarkBlue_Palette)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Brownish_Palette
+                                    ),
+                                    startY = 200f
+                                )
+                            )
+                    ){
+
+                    }
+                }
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CircularProgressIndicator(
+                        trackColor = Color.White,
+                        strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
+                        strokeWidth = 6.dp,
+                        modifier = Modifier.size(60.dp)
+                    )
+                }
+            } else {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -120,197 +155,181 @@ fun ProfileScreen(
                             )
                     )
                     {
-                        if (progressBarLoading) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.Center,
-                                horizontalAlignment = Alignment.CenterHorizontally
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.End
                             ) {
-                                CircularProgressIndicator(
-                                    trackColor = Color.White,
-                                    strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
-                                    strokeWidth = 6.dp,
-                                    modifier = Modifier.size(60.dp)
+                                Text(
+                                    text = "Constantio", fontSize = 48.sp,
+                                    fontFamily = FontFamily.Cursive,
+                                    fontWeight = FontWeight.W700,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.width(70.dp))
+                                Image(
+                                    painter = painterResource(id = R.drawable.send_red),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .width(36.dp)
+                                        .height(36.dp)
+                                        .padding(top = 8.dp)
                                 )
                             }
-                        }
-                        else{
-                            Column(
-                                modifier = Modifier.fillMaxSize()
+                            Divider(
+                                thickness = 2.dp,
+                                color = LightRed_Palette,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.End
+                                StoryIcon(profile = profile)
+                                Column(
+                                    modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
-                                        text = "Constantio", fontSize = 48.sp,
+                                        text = profile?.name as String, fontSize = 28.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
-                                        color = Color.White
+                                        color = Color.White,
+                                        modifier = Modifier.padding(8.dp)
                                     )
-                                    Spacer(modifier = Modifier.width(70.dp))
-                                    Image(
-                                        painter = painterResource(id = R.drawable.send_red),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .width(36.dp)
-                                            .height(36.dp)
-                                            .padding(top = 8.dp)
+                                    Text(
+                                        text = "Posts: ${profile?.listOfPictures?.size}",
+                                        fontSize = 20.sp,
+                                        fontFamily = FontFamily.Cursive,
+                                        fontWeight = FontWeight.W700,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                    Text(
+                                        text = "Followers: 0", fontSize = 20.sp,
+                                        fontFamily = FontFamily.Cursive,
+                                        fontWeight = FontWeight.W700,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                    Text(
+                                        text = "Following: 0", fontSize = 20.sp,
+                                        fontFamily = FontFamily.Cursive,
+                                        fontWeight = FontWeight.W700,
+                                        color = Color.White,
+                                        modifier = Modifier.padding(8.dp)
                                     )
                                 }
-                                Divider(
-                                    thickness = 2.dp,
-                                    color = LightRed_Palette,
-                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp)
-                                )
-                                Row(
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    StoryIcon(profile = profile)
-                                    Column(
-                                        modifier = Modifier.padding(16.dp)
-                                    ) {
-                                        Text(
-                                            text = profile?.name as String, fontSize = 28.sp,
-                                            fontFamily = FontFamily.Cursive,
-                                            fontWeight = FontWeight.W700,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                        Text(
-                                            text = "Posts: ${profile?.listOfPictures?.size}",
-                                            fontSize = 20.sp,
-                                            fontFamily = FontFamily.Cursive,
-                                            fontWeight = FontWeight.W700,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                        Text(
-                                            text = "Followers: 0", fontSize = 20.sp,
-                                            fontFamily = FontFamily.Cursive,
-                                            fontWeight = FontWeight.W700,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                        Text(
-                                            text = "Following: 0", fontSize = 20.sp,
-                                            fontFamily = FontFamily.Cursive,
-                                            fontWeight = FontWeight.W700,
-                                            color = Color.White,
-                                            modifier = Modifier.padding(8.dp)
-                                        )
-                                    }
-                                }
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 16.dp)
-                                ) {
-                                    if (profile?.userId != emailPasswordManager.getCurrentUser()?.uid) {
-                                        Button(
-                                            onClick = { /*TODO*/ },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = LightRed_Palette
-                                            )
-                                        ) {
-                                            Text(text = "Follow")
-                                        }
-                                        Spacer(modifier = Modifier.padding(8.dp))
-                                        /* TODO -> Implement only if enough time
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(start = 16.dp)
+                            ) {
+                                if (profile?.userId != emailPasswordManager.getCurrentUser()?.uid) {
                                     Button(
                                         onClick = { /*TODO*/ },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LightRed_Palette
                                         )
                                     ) {
-                                        Text(text = "Message")
-                                    }*/
-                                    } else {
-                                        Button(
-                                            onClick = {
-                                                multiplePhotoPickerLauncher.launch(
-                                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                                )
-                                            },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = LightRed_Palette
+                                        Text(text = "Follow")
+                                    }
+                                    Spacer(modifier = Modifier.padding(8.dp))
+                                    /* TODO -> Implement only if enough time
+                                Button(
+                                    onClick = { /*TODO*/ },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = LightRed_Palette
+                                    )
+                                ) {
+                                    Text(text = "Message")
+                                }*/
+                                } else {
+                                    Button(
+                                        onClick = {
+                                            multiplePhotoPickerLauncher.launch(
+                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
-                                        ) {
-                                            Text(text = "Add post")
-                                        }
-                                        Spacer(modifier = Modifier.padding(8.dp))
-                                        Button(
-                                            onClick = {
-                                                progressBarLoading = true
-                                                singlePhotoPickerLauncher.launch(
-                                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                                )
-                                            },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = LightRed_Palette
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = LightRed_Palette
+                                        )
+                                    ) {
+                                        Text(text = "Add post")
+                                    }
+                                    Spacer(modifier = Modifier.padding(8.dp))
+                                    Button(
+                                        onClick = {
+                                            progressBarLoading = true
+                                            singlePhotoPickerLauncher.launch(
+                                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
-                                        ) {
-                                            Text(text = "Change profile picture")
-                                        }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = LightRed_Palette
+                                        )
+                                    ) {
+                                        Text(text = "Change profile picture")
                                     }
                                 }
                             }
                         }
                     }
-                        }
-                if(!progressBarLoading)
-                {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    if (listOfPictures.isEmpty()) {
-                        Row(
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                if (listOfPictures.isEmpty()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 36.dp, end = 32.dp),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "No posts to display", fontSize = 32.sp,
+                            fontFamily = FontFamily.Cursive,
+                            fontWeight = FontWeight.W700,
+                            color = Color.White,
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+                }
+                else{
+                    EasyGrid(nColumns = 3, items = listOfPictures) { imageUri ->
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 36.dp, end = 32.dp),
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = "No posts to display", fontSize = 32.sp,
-                                fontFamily = FontFamily.Cursive,
-                                fontWeight = FontWeight.W700,
-                                color = Color.White,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        }
-                    } else {
-                        EasyGrid(nColumns = 3, items = listOfPictures) { imageUri ->
-                            AsyncImage(
-                                model = imageUri,
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(160.dp)
-                                    .clip(RoundedCornerShape(8.dp)),
-                            )
-                        }
+                                .size(160.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                        )
                     }
                 }
             }
+        }
     }
 }
 
 @Composable
-fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit){
-    Column{
-        for(i in items.indices step nColumns){
-            Row{
-                for(j in 0 until nColumns){
-                    if(i + j < items.size){
+fun <T> EasyGrid(nColumns: Int, items: List<T>, content: @Composable (T) -> Unit) {
+    Column {
+        for (i in items.indices step nColumns) {
+            Row {
+                for (j in 0 until nColumns) {
+                    if (i + j < items.size) {
                         Box(
                             contentAlignment = Alignment.TopCenter,
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(4.dp)
-                        ){
-                            content(items[i+j])
-                        }}else{
-                        Spacer(Modifier.weight(1f,fill = true))
+                        ) {
+                            content(items[i + j])
+                        }
+                    } else {
+                        Spacer(Modifier.weight(1f, fill = true))
                     }
                 }
             }
