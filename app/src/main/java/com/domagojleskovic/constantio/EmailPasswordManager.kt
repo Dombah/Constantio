@@ -8,14 +8,12 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
-import androidx.navigation.NavController
 import com.domagojleskovic.constantio.ui.Profile
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.database.DataSnapshot
@@ -76,7 +74,11 @@ class EmailPasswordManager(
             .addOnSuccessListener {
                 Log.d("FirebaseWrite", "User data written successfully")
                 val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-                writeUserProfilePicture(imageUri){
+                writeUserPicture(
+                    imageUri,
+                    StringConstants.firebaseUserProfilePicturePath,
+                    compressionPercentage = 75
+                ) {
                     uri ->
                     if(uri != null){
                         profile = Profile(uri, userId,name,email)
@@ -90,7 +92,16 @@ class EmailPasswordManager(
                 Log.e("FirebaseWrite", "Error writing user data", e)
             }
     }
-    fun writeUserProfilePicture(imageUri : Uri, callback : (Uri?) -> Unit){
+    fun writeUserPicture(
+        imageUri : Uri,
+        firebasePath : String,
+        compressionPercentage : Int = 50,
+        callback : (Uri?) -> Unit
+    ){
+        if(compressionPercentage < 0 || compressionPercentage > 100){
+            Log.e("CompressionError", "The compression percentage is out of bounds")
+            return
+        }
         var bitmap : Bitmap? = null
         try{
             bitmap = when {
@@ -107,9 +118,9 @@ class EmailPasswordManager(
             Log.e("WritingUserError","Error " + e.message)
         }
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, 25, byteArrayOutputStream)
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100 - compressionPercentage, byteArrayOutputStream)
         val compressedData = byteArrayOutputStream.toByteArray()
-        storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
+        storage = FirebaseStorage.getInstance().getReference(firebasePath+auth.currentUser?.uid)
         storage.putBytes(compressedData).addOnSuccessListener {
             callback(imageUri)
         }

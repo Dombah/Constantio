@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
+import com.domagojleskovic.constantio.StringConstants
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
@@ -86,7 +87,11 @@ fun ProfileScreen(
     }
     LaunchedEffect(selectedImageUri) {
         if(selectedImageUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
-            emailPasswordManager.writeUserProfilePicture(selectedImageUri as Uri) { uri ->
+            emailPasswordManager.writeUserPicture(
+                selectedImageUri as Uri,
+                StringConstants.firebaseUserProfilePicturePath,
+                compressionPercentage = 75
+            ) { uri ->
                 profile = profile!!.copy(icon = uri)
                 emailPasswordManager.profile = profile!!
                 progressBarLoading = false
