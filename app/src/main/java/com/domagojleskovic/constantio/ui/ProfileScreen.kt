@@ -62,20 +62,24 @@ fun ProfileScreen(
     var selectedImageUris by remember {
         mutableStateOf<List<Uri?>>(emptyList())
     }
-    val photoPickerLauncher = rememberLauncherForActivityResult(
+    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = {
             selectedImageUris = it
         }
     )
+    var selectedImageUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = {
+            selectedImageUri = it
+        }
+    )
     var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
 
     LaunchedEffect(selectedImageUris){
-        /*
-        for (imageUri in selectedImageUris){
-            listOfPictures.plus(imageUri)
-            profile?.listOfPictures?.plus(imageUri)
-        }*/
         listOfPictures = listOfPictures + selectedImageUris
         profile?.listOfPictures = listOfPictures
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
@@ -200,7 +204,7 @@ fun ProfileScreen(
                             }else{
                                 Button(
                                     onClick = {
-                                        photoPickerLauncher.launch(
+                                        multiplePhotoPickerLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
                                     },
@@ -212,12 +216,22 @@ fun ProfileScreen(
                                 }
                                 Spacer(modifier = Modifier.padding(8.dp))
                                 Button(
-                                    onClick = { /*TODO*/ },
+                                    onClick = {
+                                        singlePhotoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                        selectedImageUri?.let {
+                                            emailPasswordManager.writeUserProfilePicture(it){
+                                                uri ->
+                                                profile = profile!!.copy(icon = uri)
+                                            }
+                                        }
+                                    },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = LightRed_Palette
                                     )
                                 ) {
-                                    Text(text = "Message")
+                                    Text(text = "Change profile picture")
                                 }
                             }
                         }

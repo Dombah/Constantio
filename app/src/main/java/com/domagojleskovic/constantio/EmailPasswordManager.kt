@@ -73,19 +73,30 @@ class EmailPasswordManager(
             .addOnSuccessListener {
                 Log.d("FirebaseWrite", "User data written successfully")
                 val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-                storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
-                storage.putFile(imageUri).addOnSuccessListener {
-                    profile = Profile(imageUri, name, email)
-                    onSuccess()
-                }.addOnFailureListener{
-                    Toast.makeText(context, "Failed created user", Toast.LENGTH_SHORT).show()
+                writeUserProfilePicture(imageUri){
+                    uri ->
+                    if(uri != null){
+                        profile = Profile(uri, userId,name,email)
+                        onSuccess()
+                    }else{
+                        Toast.makeText(context, "Error writing user picture", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .addOnFailureListener { e ->
                 Log.e("FirebaseWrite", "Error writing user data", e)
             }
     }
-
+    fun writeUserProfilePicture(imageUri : Uri, callback : (Uri?) -> Unit){
+        storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
+        storage.putFile(imageUri)
+            .addOnSuccessListener {
+                callback(imageUri)
+        }
+            .addOnFailureListener{
+                callback(null)
+            }
+    }
     fun getCurrentUserImageUri(callback: (Uri?) -> Unit) {
         val user = auth.currentUser
         storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/${user?.uid}")
@@ -103,7 +114,7 @@ class EmailPasswordManager(
     }
     private fun observeUserProfile(callback: (Profile?) -> Unit) {
         val userId = getCurrentUser()?.uid
-            getDBO()
+        getDBO()
             .child("users")
             .child(userId!!)
             .addValueEventListener(object : ValueEventListener {
