@@ -102,7 +102,7 @@ class EmailPasswordManager(
             callback(null)
         }
     }
-    fun observeUserProfile(callback: (Profile?) -> Unit) {
+    private fun observeUserProfile(callback: (Profile?) -> Unit) {
         val userId = getCurrentUser()?.uid
              getDBO()
             .child("users")

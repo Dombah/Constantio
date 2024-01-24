@@ -27,6 +27,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -74,130 +75,117 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Card(
-            modifier = Modifier.width(350.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = DarkBlue_Palette
+        if(progressBarLoading){
+            CircularProgressIndicator(
+                trackColor = Color.White,
+                strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
+                strokeWidth = 6.dp,
+                modifier = Modifier.size(60.dp)
             )
-        ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
+        }
+        else{
+            Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
             )
-            {
-                if(progressBarLoading){
-                    CircularProgressIndicator(
-                        trackColor = Color.White
-                    )
+            Text(
+                text = "Constantio", fontSize = 48.sp,
+                fontFamily = FontFamily.Cursive,
+                fontWeight = FontWeight.W700,
+                color = Color.White
+            )
+            OutlinedTextField(
+                value = email,
+                onValueChange = {
+                    email = it
+                },
+                label = {
+                    Text("Email", color = Color.White)
+                },
+                modifier = Modifier.padding(8.dp),
+                shape = RoundedCornerShape(16.dp),
+                textStyle = TextStyle(color = Color.White),
+            )
+            OutlinedTextField(
+                value = password,
+                onValueChange = {
+                    password = it
+                },
+                label = {
+                    Text("Password", color = Color.White)
+                },
+                shape = RoundedCornerShape(16.dp),
+                textStyle = TextStyle(color = Color.White),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Hide password" else "Show password"
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            description,
+                            tint = Color.White
+                        )
+                    }
                 }
-                else{
-                    // Compensate for the whitespace
-                    Spacer(modifier = Modifier.size(40.dp))
-                }
-                Spacer(modifier = Modifier.padding(0.dp, 16.dp, 0.dp, 0.dp))
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(100.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ClickableText(
+                    text = AnnotatedString("Forgot Password?"),
+                    onClick = {
+                        onNavigateForgotPasswordScreen()
+                    },
+                    style = TextStyle(
+                        color = Red_Palette
+                    ),
+                    modifier = Modifier.padding(4.dp, 4.dp, 16.dp, 4.dp)
                 )
+
+            }
+            Spacer(modifier = Modifier.height(24.dp))
+            Button(
+                onClick = {
+                    progressBarLoading = true
+                    emailPasswordManager.signIn(email,password){
+                        navController.navigate("main_screen")
+                        progressBarLoading = false
+                    }
+                },
+                modifier = Modifier.width(150.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LightRed_Palette
+                )
+            ) {
+                Text("Log In", fontSize = 16.sp)
+            }
+            Spacer(modifier = Modifier.height(64.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
                 Text(
-                    text = "Constantio", fontSize = 48.sp,
-                    fontFamily = FontFamily.Cursive,
-                    fontWeight = FontWeight.W700,
+                    text = "Don't have an account? ",
                     color = Color.White
                 )
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = {
-                        email = it
-                    },
-                    label = {
-                        Text("Email", color = Color.White)
-                    },
-                    modifier = Modifier.padding(8.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(color = Color.White),
+                ClickableText(
+                    text = AnnotatedString("Sign Up"),
+                    onClick = { onNavigateRegisterScreen() },
+                    style = TextStyle(
+                        color = Red_Palette
+                    )
                 )
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = {
-                        password = it
-                    },
-                    label = {
-                        Text("Password", color = Color.White)
-                    },
-                    shape = RoundedCornerShape(16.dp),
-                    textStyle = TextStyle(color = Color.White),
-                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    trailingIcon = {
-                        val image = if (passwordVisible)
-                            Icons.Filled.Visibility
-                        else Icons.Filled.VisibilityOff
-                        val description = if (passwordVisible) "Hide password" else "Show password"
-                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                            Icon(
-                                imageVector = image,
-                                description,
-                                tint = Color.White
-                            )
-                        }
-                    }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ClickableText(
-                        text = AnnotatedString("Forgot Password?"),
-                        onClick = {
-                            onNavigateForgotPasswordScreen()
-                        },
-                        style = TextStyle(
-                            color = Red_Palette
-                        ),
-                        modifier = Modifier.padding(4.dp, 4.dp, 16.dp, 4.dp)
-                    )
-
-                }
-                Spacer(modifier = Modifier.height(24.dp))
-                Button(
-                    onClick = {
-                            progressBarLoading = true
-                            emailPasswordManager.signIn(email,password){
-                                navController.navigate("main_screen")
-                                progressBarLoading = false
-                            }
-                    },
-                    modifier = Modifier.width(150.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = LightRed_Palette
-                    )
-                ) {
-                    Text("Log In", fontSize = 16.sp)
-                }
-                Spacer(modifier = Modifier.height(64.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Don't have an account? ",
-                        color = Color.White
-                    )
-                    ClickableText(
-                        text = AnnotatedString("Sign Up"),
-                        onClick = { onNavigateRegisterScreen() },
-                        style = TextStyle(
-                            color = Red_Palette
-                        )
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
     }
 }
