@@ -156,10 +156,17 @@ fun LoginScreen(
             Button(
                 onClick = {
                     progressBarLoading = true
-                    emailPasswordManager.signIn(email,password){
-                        navController.navigate("main_screen")
-                        progressBarLoading = false
-                    }
+                    emailPasswordManager.signIn(
+                        email,
+                        password,
+                        onSuccess = {
+                            navController.navigate("main_screen")
+                            progressBarLoading = false
+                        },
+                        onFailure = {
+                            progressBarLoading = false
+                        }
+                    )
                 },
                 modifier = Modifier.width(150.dp),
                 colors = ButtonDefaults.buttonColors(

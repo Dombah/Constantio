@@ -2,7 +2,10 @@ package com.domagojleskovic.constantio
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.ImageDecoder
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.navigation.NavController
@@ -23,6 +26,7 @@ import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import java.io.ByteArrayOutputStream
 import java.io.File
 
 class EmailPasswordManager(
@@ -37,10 +41,9 @@ class EmailPasswordManager(
     fun getCurrentUser() : FirebaseUser?{
         return auth.currentUser
     }
-    fun getDBO() : DatabaseReference{
+    private fun getDBO() : DatabaseReference{
         return database
     }
-
     private fun displayAuthenticationException(exception: Exception){
         try{
             throw exception
@@ -88,14 +91,39 @@ class EmailPasswordManager(
             }
     }
     fun writeUserProfilePicture(imageUri : Uri, callback : (Uri?) -> Unit){
+        var bitmap : Bitmap? = null
+        try{
+            bitmap = when {
+                Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(
+                    context.contentResolver,
+                    imageUri
+                )
+                else -> {
+                    val source = ImageDecoder.createSource(context.contentResolver, imageUri)
+                    ImageDecoder.decodeBitmap(source)
+                }
+            }
+        }catch(e : Exception){
+            Log.e("WritingUserError","Error " + e.message)
+        }
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 25, byteArrayOutputStream)
+        val compressedData = byteArrayOutputStream.toByteArray()
         storage = FirebaseStorage.getInstance().getReference("UserProfilePictures/"+auth.currentUser?.uid)
+        storage.putBytes(compressedData).addOnSuccessListener {
+            callback(imageUri)
+        }
+            .addOnFailureListener{
+                callback(null)
+            }
+        /*
         storage.putFile(imageUri)
             .addOnSuccessListener {
                 callback(imageUri)
         }
             .addOnFailureListener{
                 callback(null)
-            }
+            }*/
     }
     fun getCurrentUserImageUri(callback: (Uri?) -> Unit) {
         val user = auth.currentUser
@@ -133,12 +161,12 @@ class EmailPasswordManager(
                     }
                 }
                 override fun onCancelled(error: DatabaseError) {
-                    Log.e("FirebaseError", "Error getting data",)
+                    Log.e("FirebaseError", "Error getting data")
                     callback(null)
                 }
             })
     }
-    fun signIn(email: String, password: String, onSuccess: () -> Unit) {
+    fun signIn(email: String, password: String, onSuccess: () -> Unit, onFailure : () -> Unit) {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -151,6 +179,7 @@ class EmailPasswordManager(
             }
             .addOnFailureListener{
                 Toast.makeText(context, "User either doesn't exist or the password is wrong", Toast.LENGTH_SHORT).show()
+                onFailure()
             }
     }
     fun resetPassword(email : String, onSuccess: () -> Unit){

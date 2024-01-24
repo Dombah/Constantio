@@ -69,7 +69,7 @@ fun ProfileScreen(
         }
     )
     var selectedImageUri by remember {
-        mutableStateOf<Uri?>(null)
+        mutableStateOf(profile?.icon)
     }
     val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -83,6 +83,12 @@ fun ProfileScreen(
         listOfPictures = listOfPictures + selectedImageUris
         profile?.listOfPictures = listOfPictures
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
+    }
+    LaunchedEffect(selectedImageUri) {
+        emailPasswordManager.writeUserProfilePicture(selectedImageUri as Uri) { uri ->
+            profile = profile!!.copy(icon = uri)
+            emailPasswordManager.profile = profile!!
+        }
     }
     LazyColumn(
         modifier = Modifier
@@ -220,12 +226,6 @@ fun ProfileScreen(
                                         singlePhotoPickerLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                         )
-                                        selectedImageUri?.let {
-                                            emailPasswordManager.writeUserProfilePicture(it){
-                                                uri ->
-                                                profile = profile!!.copy(icon = uri)
-                                            }
-                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = LightRed_Palette
