@@ -104,7 +104,7 @@ class EmailPasswordManager(
     }
     private fun observeUserProfile(callback: (Profile?) -> Unit) {
         val userId = getCurrentUser()?.uid
-             getDBO()
+            getDBO()
             .child("users")
             .child(userId!!)
             .addValueEventListener(object : ValueEventListener {
@@ -155,20 +155,6 @@ class EmailPasswordManager(
             .addOnFailureListener{
                 Toast.makeText(context, "Failed sending password reset to email address", Toast.LENGTH_SHORT).show()
             }
-    }
-    private fun sendEmailVerification() {
-        // [START send_email_verification]
-        val user = auth.currentUser!!
-        user.sendEmailVerification()
-            .addOnCompleteListener { task ->
-                // Email Verification sent
-            }
-        // [END send_email_verification]
-    }
-
-    private fun reload()
-    {
-
     }
 
     companion object {
