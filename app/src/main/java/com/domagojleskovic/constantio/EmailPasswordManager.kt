@@ -27,7 +27,6 @@ import java.io.File
 
 class EmailPasswordManager(
     private val context: Context,
-    private val navController: NavController,
 ) {
 
     private var auth: FirebaseAuth = Firebase.auth

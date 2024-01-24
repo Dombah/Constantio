@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
-                    val emailPasswordManager = EmailPasswordManager(this, navController)
+                    val emailPasswordManager = EmailPasswordManager(this)
                     NavHost(navController = navController, startDestination = "login") {
                         composable("login") {
                             LoginScreen(
