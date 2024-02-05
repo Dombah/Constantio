@@ -154,25 +154,18 @@ class EmailPasswordManager(
                 callback(null)
             }
     }
-    fun getCurrentUserImageUri(callback: (Uri?) -> Unit) {
-        val user = auth.currentUser
-        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserProfilePicturePath+"${user?.uid}")
-        if(user != null) {
-            val localFile = File.createTempFile("images", ".png")
-            storage.getFile(localFile).addOnSuccessListener {
-                callback(Uri.fromFile(localFile))
-            }.addOnFailureListener {
-                callback(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"))
-            }
-        }
-        else{
-            callback(null)
+    fun getUserImageUri(userId: String? ,callback: (Uri?) -> Unit) {
+        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserProfilePicturePath+userId)
+        val localFile = File.createTempFile("images", ".png")
+        storage.getFile(localFile).addOnSuccessListener {
+            callback(Uri.fromFile(localFile))
+        }.addOnFailureListener {
+            callback(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"))
         }
     }
 
-    private fun fetchUserPosts(callback: (List<Uri?>) -> Unit){
-        val user = auth.currentUser
-        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserPicturesPath+ user!!.uid+"/Posts/")
+    private fun fetchUserPosts(userId: String? ,callback: (List<Uri?>) -> Unit){
+        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserPicturesPath+userId+"/Posts/")
         storage.listAll()
             .addOnSuccessListener { listResult ->
                 val itemsCount = listResult.items.size
@@ -184,11 +177,11 @@ class EmailPasswordManager(
                     item.downloadUrl
                         .addOnSuccessListener { uri ->
                             val timestamp = extractTimestampFromUri(uri)
-                                urisWithTimestamps.add(timestamp to uri)
-                                if (urisWithTimestamps.size == itemsCount) {
-                                    val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
-                                    callback(sortedUris)
-                                }
+                            urisWithTimestamps.add(timestamp to uri)
+                            if (urisWithTimestamps.size == itemsCount) {
+                                val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
+                                callback(sortedUris)
+                            }
                     }
                         .addOnFailureListener {
                             urisWithTimestamps.add(0L to null)
@@ -224,8 +217,7 @@ class EmailPasswordManager(
         }
     }
 
-    private fun observeUserProfile(callback: (Profile?) -> Unit) {
-        val userId = getCurrentUser()?.uid
+    private fun observeUserProfile(userId: String? ,callback: (Profile?) -> Unit) {
         getDBO()
             .child("users")
             .child(userId!!)
@@ -233,11 +225,11 @@ class EmailPasswordManager(
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val userProfile = snapshot.getValue<Profile>()
                     userProfile?.let {
-                        var updatedProfile = userProfile
-                        getCurrentUserImageUri { uri ->
+                        var updatedProfile: Profile?
+                        getUserImageUri(userId = userId) { uri ->
                             if (uri != null) {
                                 updatedProfile = userProfile.copy(icon = uri)
-                                fetchUserPosts { posts ->
+                                fetchUserPosts(userId) { posts ->
                                     updatedProfile = updatedProfile!!.copy(listOfPictures = posts)
                                     callback(updatedProfile)
                                 }
@@ -257,10 +249,12 @@ class EmailPasswordManager(
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser!!
-                    observeUserProfile {
+                    observeUserProfile(auth.currentUser?.uid) {
                         profile = it!!
-                        onSuccess(true)
+                        addAllUsers { list ->
+                            profile.listOfFollowedProfiles = list
+                            onSuccess(true)
+                        }
                     }
                 }
             }
@@ -269,6 +263,25 @@ class EmailPasswordManager(
                 onSuccess(false)
             }
     }
+
+    private fun addAllUsers(callback : (List<Profile>) -> Unit){
+        val profilesList = mutableListOf<Profile>()
+        database.child("users").get()
+            .addOnSuccessListener { dataSnapshot ->
+                for (childSnapshot in dataSnapshot.children) {
+                    val profile = childSnapshot.getValue(Profile::class.java)
+                    val userId = childSnapshot.key
+                    if (profile != null && userId != auth.currentUser?.uid) {
+                        Log.i("AddedUserInfo", "Added profile : $profile")
+                        observeUserProfile(profile.userId){ updatedProfile ->
+                            updatedProfile?.let { profilesList.add(it) }
+                        }
+                    }
+                }
+            }
+        callback(profilesList)
+    }
+
     fun resetPassword(email : String, onSuccess: () -> Unit){
         auth.sendPasswordResetEmail(email)
             .addOnCompleteListener{

@@ -84,7 +84,7 @@ fun ProfileScreen(
         if(selectedImageUris.isNotEmpty())
         {
             val templist = mutableListOf<Uri?>()
-            selectedImageUris.forEach{uri ->
+            selectedImageUris.forEach{ uri ->
                 templist.add(0, uri)
             }
             listOfPictures = templist + listOfPictures
@@ -113,12 +113,6 @@ fun ProfileScreen(
             }
         }
     }
-    /*
-    DisposableEffect(Unit) {
-        onDispose {
-            uploadFinished = false
-        }
-    }*/
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()

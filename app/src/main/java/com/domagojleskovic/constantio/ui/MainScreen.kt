@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
@@ -123,7 +125,6 @@ fun MainScreen(
         Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com")
     )
     var profile by remember { mutableStateOf<Profile?>(null) }
-    val userId = emailPasswordManager.getCurrentUser()?.uid
     profile = emailPasswordManager.profile
     val scrollState = rememberLazyListState()
     LazyColumn(
@@ -209,6 +210,28 @@ fun MainScreen(
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)
+                    }
+                }
+            }
+        }
+        items(profile!!.listOfFollowedProfiles) { profile ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                profile.listOfPictures.forEach { imageUri ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(), // Make the Row fill the Column width
+                        horizontalArrangement = Arrangement.Center // Center content horizontally
+                    ) {
+                        AsyncImage(
+                            model = imageUri,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(36.dp))
+                                .padding(8.dp)
+                        )
                     }
                 }
             }
