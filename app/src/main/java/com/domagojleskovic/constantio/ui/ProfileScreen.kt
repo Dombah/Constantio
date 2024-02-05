@@ -27,6 +27,7 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,8 +61,12 @@ fun ProfileScreen(
     profile = emailPasswordManager.profile
 
     var selectedImageUris by remember {
-        mutableStateOf<List<Uri?>>(emptyList())
+        mutableStateOf(listOf<Uri>())
     }
+    var uploadFinished by remember {
+        mutableStateOf(false)
+    }
+
     val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = {
@@ -81,16 +86,28 @@ fun ProfileScreen(
     var progressBarLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedImageUris) {
-        listOfPictures = listOfPictures + selectedImageUris
-        profile?.listOfPictures = listOfPictures
+        if(selectedImageUris.isNotEmpty()/* && !uploadFinished*/)
+        {
+            listOfPictures = listOfPictures + selectedImageUris
+            profile?.listOfPictures = listOfPictures
+            for (picture in selectedImageUris){
+                emailPasswordManager.writeUserPicture(
+                    isProfilePicture = false,
+                    picture,
+                ){}
+            }
+            selectedImageUris = listOf()
+            Log.i("SelectedImageUris", selectedImageUris.toString())
+            uploadFinished = true
+        }
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
     LaunchedEffect(selectedImageUri) {
         if(selectedImageUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
-            emailPasswordManager.writeUserPicture(
-                selectedImageUri as Uri,
-                StringConstants.firebaseUserProfilePicturePath,
-                compressionPercentage = 75
+                emailPasswordManager.writeUserPicture(
+                    isProfilePicture = true,
+                    selectedImageUri as Uri,
+                    compressionPercentage = 75
             ) { uri ->
                 profile = profile!!.copy(icon = uri)
                 emailPasswordManager.profile = profile!!
@@ -98,6 +115,12 @@ fun ProfileScreen(
             }
         }
     }
+    /*
+    DisposableEffect(Unit) {
+        onDispose {
+            uploadFinished = false
+        }
+    }*/
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -258,6 +281,7 @@ fun ProfileScreen(
                                             multiplePhotoPickerLauncher.launch(
                                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
+                                            uploadFinished = false
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LightRed_Palette
@@ -308,7 +332,7 @@ fun ProfileScreen(
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(160.dp)
+                                .size(200.dp)
                                 .clip(RoundedCornerShape(8.dp)),
                         )
                     }

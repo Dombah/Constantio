@@ -1,5 +1,7 @@
 package com.domagojleskovic.constantio.ui
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -61,7 +63,8 @@ fun LoginScreen(
     onNavigateForgotPasswordScreen: () -> Unit,
     onNavigateRegisterScreen: () -> Unit,
     navController: NavController,
-    emailPasswordManager: EmailPasswordManager
+    emailPasswordManager: EmailPasswordManager,
+    context : Context
 ) {
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
@@ -159,12 +162,15 @@ fun LoginScreen(
                     emailPasswordManager.signIn(
                         email,
                         password,
-                        onSuccess = {
-                            navController.navigate("main_screen")
-                            progressBarLoading = false
-                        },
-                        onFailure = {
-                            progressBarLoading = false
+                        onSuccess = {success ->
+                            if(success){
+                                navController.navigate("main_screen")
+                                progressBarLoading = false
+                            }else{
+                                progressBarLoading = false
+                                Toast.makeText(context, "Failed to sign in for unknown reason", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
                         }
                     )
                 },

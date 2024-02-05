@@ -165,7 +165,7 @@ fun MainScreen(
                             contentDescription = "Profile Picture",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(45.dp)
                                 .clip(CircleShape)
                                 .border(2.dp, Brownish_Palette, CircleShape)
                                 .clickable {
@@ -212,17 +212,7 @@ fun MainScreen(
                     }
                 }
             }
-            /*TODO move to profile screen
-
-            */
         }
-        /* TODO move to profile screen
-        items(selectedImageUris){
-                selectedImageUri ->
-
-            )
-        }
-        */
     }
 }
 

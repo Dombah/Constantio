@@ -38,7 +38,8 @@ class MainActivity : ComponentActivity() {
                                 onNavigateForgotPasswordScreen = { navController.navigate("forgot_password")},
                                 onNavigateRegisterScreen = { navController.navigate("register")},
                                 navController,
-                                emailPasswordManager
+                                emailPasswordManager,
+                                this@MainActivity
                             )
                         }
                         composable("register") { RegisterScreen(emailPasswordManager, navController, this@MainActivity) }
