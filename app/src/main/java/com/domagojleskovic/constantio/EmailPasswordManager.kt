@@ -237,18 +237,13 @@ class EmailPasswordManager(
                         getCurrentUserImageUri { uri ->
                             if (uri != null) {
                                 updatedProfile = userProfile.copy(icon = uri)
+                                fetchUserPosts { posts ->
+                                    updatedProfile = updatedProfile!!.copy(listOfPictures = posts)
+                                    callback(updatedProfile)
+                                }
                             } else {
                                 callback(null)
                             }
-                        }
-                        fetchUserPosts { posts ->
-                            if(posts.isNotEmpty())
-                            {
-                                updatedProfile = updatedProfile!!.copy(listOfPictures = posts)
-                                callback(updatedProfile)
-                            }
-                            else
-                                callback(null)
                         }
                     }
                 }
