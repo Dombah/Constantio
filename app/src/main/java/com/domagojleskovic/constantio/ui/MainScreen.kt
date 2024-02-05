@@ -216,12 +216,14 @@ fun MainScreen(
         }
         items(profile!!.listOfFollowedProfiles) { profile ->
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 profile.listOfPictures.forEach { imageUri ->
                     Row(
-                        modifier = Modifier.fillMaxWidth(), // Make the Row fill the Column width
-                        horizontalArrangement = Arrangement.Center // Center content horizontally
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                        horizontalArrangement = Arrangement.Center
                     ) {
                         AsyncImage(
                             model = imageUri,
@@ -229,12 +231,12 @@ fun MainScreen(
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .clip(RoundedCornerShape(36.dp))
-                                .padding(8.dp)
+                                .clip(RoundedCornerShape(8.dp))
                         )
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
