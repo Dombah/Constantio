@@ -54,8 +54,7 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
 @Composable
 fun ProfileScreen(
-    emailPasswordManager: EmailPasswordManager,
-    userId: String?
+    emailPasswordManager: EmailPasswordManager
 ) {
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
@@ -63,10 +62,6 @@ fun ProfileScreen(
     var selectedImageUris by remember {
         mutableStateOf(listOf<Uri>())
     }
-    var uploadFinished by remember {
-        mutableStateOf(false)
-    }
-
     val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
         onResult = {
@@ -86,9 +81,13 @@ fun ProfileScreen(
     var progressBarLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedImageUris) {
-        if(selectedImageUris.isNotEmpty()/* && !uploadFinished*/)
+        if(selectedImageUris.isNotEmpty())
         {
-            listOfPictures = listOfPictures + selectedImageUris
+            val templist = mutableListOf<Uri?>()
+            selectedImageUris.forEach{uri ->
+                templist.add(0, uri)
+            }
+            listOfPictures = templist + listOfPictures
             profile?.listOfPictures = listOfPictures
             for (picture in selectedImageUris){
                 emailPasswordManager.writeUserPicture(
@@ -98,7 +97,6 @@ fun ProfileScreen(
             }
             selectedImageUris = listOf()
             Log.i("SelectedImageUris", selectedImageUris.toString())
-            uploadFinished = true
         }
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
@@ -281,7 +279,6 @@ fun ProfileScreen(
                                             multiplePhotoPickerLauncher.launch(
                                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
-                                            uploadFinished = false
                                         },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LightRed_Palette

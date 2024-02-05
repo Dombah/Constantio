@@ -44,18 +44,16 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("register") { RegisterScreen(emailPasswordManager, navController, this@MainActivity) }
                         composable("main_screen") { MainScreen(
-                            onNavigateProfileScreen = { profile ->
-                                navController.navigate("profile/${profile.userId}")
+                            onNavigateProfileScreen = {
+                                navController.navigate("profile")
                             },
                             navController,
                             emailPasswordManager,
                             this@MainActivity
                         ) }
-                        composable("profile/{userId}"){
-                            navBackStackEntry ->
+                        composable("profile"){
                             ProfileScreen(
-                                emailPasswordManager,
-                                userId = navBackStackEntry.arguments?.getString("userId"),
+                                emailPasswordManager
                             )
                         }
                         composable("forgot_password"){

@@ -26,6 +26,8 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -173,31 +175,53 @@ class EmailPasswordManager(
         storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserPicturesPath+ user!!.uid+"/Posts/")
         storage.listAll()
             .addOnSuccessListener { listResult ->
-                val uris = mutableListOf<Uri?>()
                 val itemsCount = listResult.items.size
-                var processedCount = 0
                 if (itemsCount == 0) {
                     callback(emptyList())
                 }
+                val urisWithTimestamps = mutableListOf<Pair<Long, Uri?>>()
                 listResult.items.forEach { item ->
-                    item.downloadUrl.addOnSuccessListener { uri ->
-                        uris.add(uri)
-                        processedCount++
-                        if (processedCount == itemsCount) {
-                            callback(uris)
-                        }
-                    }.addOnFailureListener {
-                        uris.add(null)
-                        processedCount++
-                        if (processedCount == itemsCount) {
-                            callback(uris)
-                        }
+                    item.downloadUrl
+                        .addOnSuccessListener { uri ->
+                            val timestamp = extractTimestampFromUri(uri)
+                                urisWithTimestamps.add(timestamp to uri)
+                                if (urisWithTimestamps.size == itemsCount) {
+                                    val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
+                                    callback(sortedUris)
+                                }
+                    }
+                        .addOnFailureListener {
+                            urisWithTimestamps.add(0L to null)
+                            if (urisWithTimestamps.size == itemsCount) {
+                                val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
+                                callback(sortedUris)
+                            }
                     }
                 }
             }
             .addOnFailureListener{
                 callback(emptyList())
             }
+    }
+
+    private fun extractTimestampFromUri(uri : Uri) : Long{
+        val decodedFileName = URLDecoder.decode(uri.lastPathSegment, StandardCharsets.UTF_8.name())
+
+        val regex = Regex("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}")
+        val matchResult = regex.find(decodedFileName)
+
+        return if (matchResult != null) {
+            val dateString = matchResult.value
+            val dateFormat = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault())
+            try {
+                dateFormat.parse(dateString)?.time ?: 0L
+            } catch (e: Exception) {
+                Log.e("DateToLongParsingError", "Couldn't parse dateFormat inside extractTimestampFromUri")
+                0L
+            }
+        } else {
+            0L
+        }
     }
 
     private fun observeUserProfile(callback: (Profile?) -> Unit) {
