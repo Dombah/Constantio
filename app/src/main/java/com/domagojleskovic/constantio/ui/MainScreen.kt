@@ -222,6 +222,7 @@ fun MainScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(350.dp)
                             .padding(top = 16.dp, start = 16.dp, end = 16.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
