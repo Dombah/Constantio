@@ -75,8 +75,9 @@ fun LoginScreen(
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
-    var progressBarLoading by remember { mutableStateOf(false)}
+    //var progressBarLoading by remember { mutableStateOf(false)}
 
+    val isLoading by viewModel.isLoading.observeAsState()
     val signInStatus by viewModel.signInStatus.observeAsState()
 
     LaunchedEffect(signInStatus) {
@@ -84,7 +85,6 @@ fun LoginScreen(
             onNavigateMainScreen()
             viewModel.clearSignInStatus()
         } else if (signInStatus == false) {
-            progressBarLoading = false
             viewModel.clearSignInStatus()
         }
     }
@@ -101,7 +101,7 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if(progressBarLoading){
+        if(isLoading == true){
             CircularProgressIndicator(
                 trackColor = Color.White,
                 strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
@@ -181,7 +181,6 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = {
-                    progressBarLoading = true
                     viewModel.signIn(email, password)
                 },
                 modifier = Modifier.width(150.dp),
