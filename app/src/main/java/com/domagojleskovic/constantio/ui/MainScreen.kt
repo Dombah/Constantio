@@ -69,6 +69,10 @@ data class Profile(
         else
             name as String
     }
+
+    fun setIconFromString(iconString: String) {
+        this.icon = Uri.parse(iconString)
+    }
 }
 
 data class Post(
@@ -108,8 +112,8 @@ val listOfProfiles = mutableListOf<Profile>(
 
 @Composable
 fun MainScreen(
-    onNavigateProfileScreen : (Profile) -> Unit,
-    navController : NavController,
+    onNavigateProfileScreen : () -> Unit,
+    onNavigateSearchScreen : () -> Unit,
     emailPasswordManager: EmailPasswordManager,
     context: Context
 ) {
@@ -170,7 +174,7 @@ fun MainScreen(
                                 .clip(CircleShape)
                                 .border(2.dp, Brownish_Palette, CircleShape)
                                 .clickable {
-                                    profile?.let { onNavigateProfileScreen(it) }
+                                    profile?.let { onNavigateProfileScreen() }
                                 }
                         )
                         Spacer(modifier = Modifier.width(70.dp))
@@ -178,7 +182,7 @@ fun MainScreen(
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)
-                        Spacer(modifier = Modifier.width(70.dp))
+                        Spacer(modifier = Modifier.width(78.dp))
                         Image(
                             painter = painterResource(id = android.R.drawable.ic_menu_search),
                             contentDescription = null,
@@ -187,7 +191,7 @@ fun MainScreen(
                                 .padding(top = 8.dp)
                                 .clickable(
                                     onClick = {
-                                        // TODO Search profiles in database
+                                        onNavigateSearchScreen()
                                     }
                                 )
                         )

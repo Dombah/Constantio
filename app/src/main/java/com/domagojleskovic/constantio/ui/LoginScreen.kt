@@ -33,7 +33,10 @@ import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -51,9 +54,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.domagojleskovic.constantio.EmailPasswordManager
+import com.domagojleskovic.constantio.LoginViewModel
 import com.domagojleskovic.constantio.R
+import com.domagojleskovic.constantio.SearchViewModel
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.domagojleskovic.constantio.ui.theme.Red_Palette
@@ -62,14 +68,31 @@ import com.domagojleskovic.constantio.ui.theme.Red_Palette
 fun LoginScreen(
     onNavigateForgotPasswordScreen: () -> Unit,
     onNavigateRegisterScreen: () -> Unit,
-    navController: NavController,
-    emailPasswordManager: EmailPasswordManager,
+    onNavigateMainScreen : () -> Unit,
+    viewModel: LoginViewModel = viewModel(),
     context : Context
 ) {
     var email by remember { mutableStateOf("d@g.com") } // TODO set to empty at deployment
     var password by remember { mutableStateOf("123456") } // TODO set to empty at deployment
     var passwordVisible by remember { mutableStateOf(false) }
     var progressBarLoading by remember { mutableStateOf(false)}
+
+    val signInStatus by viewModel.signInStatus.observeAsState()
+
+    LaunchedEffect(signInStatus) {
+        if (signInStatus == true) {
+            onNavigateMainScreen()
+            viewModel.clearSignInStatus()
+        } else if (signInStatus == false) {
+            progressBarLoading = false
+            viewModel.clearSignInStatus()
+        }
+    }
+    DisposableEffect(Unit){
+        onDispose {
+            viewModel.clearSignInStatus()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -159,25 +182,10 @@ fun LoginScreen(
             Button(
                 onClick = {
                     progressBarLoading = true
-                    emailPasswordManager.signIn(
-                        email,
-                        password,
-                        onSuccess = {success ->
-                            if(success){
-                                navController.navigate("main_screen")
-                                progressBarLoading = false
-                            }else{
-                                progressBarLoading = false
-                                Toast.makeText(context, "Failed to sign in for unknown reason", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
-                        }
-                    )
+                    viewModel.signIn(email, password)
                 },
                 modifier = Modifier.width(150.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = LightRed_Palette
-                )
+                colors = ButtonDefaults.buttonColors(containerColor = LightRed_Palette)
             ) {
                 Text("Log In", fontSize = 16.sp)
             }

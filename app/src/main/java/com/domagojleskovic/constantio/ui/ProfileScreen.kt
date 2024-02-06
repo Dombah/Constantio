@@ -235,7 +235,7 @@ fun ProfileScreen(
                                         modifier = Modifier.padding(8.dp)
                                     )
                                     Text(
-                                        text = "Following: 0", fontSize = 20.sp,
+                                        text = "Following: ${profile?.listOfFollowedProfiles?.size}", fontSize = 20.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
                                         color = Color.White,

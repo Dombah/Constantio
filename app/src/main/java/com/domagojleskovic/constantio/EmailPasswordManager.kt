@@ -24,6 +24,14 @@ import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URLDecoder
@@ -34,6 +42,9 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 import java.util.UUID
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 
 class EmailPasswordManager(
@@ -217,69 +228,73 @@ class EmailPasswordManager(
         }
     }
 
-    private fun observeUserProfile(userId: String? ,callback: (Profile?) -> Unit) {
-        getDBO()
-            .child("users")
-            .child(userId!!)
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val userProfile = snapshot.getValue<Profile>()
-                    userProfile?.let {
-                        var updatedProfile: Profile?
-                        getUserImageUri(userId = userId) { uri ->
-                            if (uri != null) {
-                                updatedProfile = userProfile.copy(icon = uri)
-                                fetchUserPosts(userId) { posts ->
-                                    updatedProfile = updatedProfile!!.copy(listOfPictures = posts)
-                                    callback(updatedProfile)
-                                }
-                            } else {
-                                callback(null)
+    suspend fun parseUserToProfile(userId: String?): Profile? = withContext(Dispatchers.IO) {
+        suspendCoroutine { continuation ->
+            if (userId == null) {
+                continuation.resume(null)
+                return@suspendCoroutine
+            }
+
+            getDBO().child("users").child(userId).get().addOnSuccessListener { snapshot ->
+                val userProfile = snapshot.getValue<Profile>()
+                userProfile?.let { profile ->
+                    getUserImageUri(userId) { uri ->
+                        if (uri != null) {
+                            var updatedProfile = profile.copy(icon = uri)
+                            fetchUserPosts(userId) { posts ->
+                                updatedProfile = updatedProfile.copy(listOfPictures = posts)
+                                continuation.resume(updatedProfile)
                             }
+                        } else {
+                            continuation.resume(null)
                         }
                     }
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Log.e("FirebaseError", "Error getting data")
-                    callback(null)
-                }
-            })
+                } ?: continuation.resume(null) // If userProfile is null, resume with null
+            }.addOnFailureListener { exception ->
+                continuation.resumeWithException(exception)
+            }
+        }
     }
-    fun signIn(email: String, password: String, onSuccess: (Boolean) -> Unit) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    observeUserProfile(auth.currentUser?.uid) {
-                        profile = it!!
-                        addAllUsers { list ->
-                            profile.listOfFollowedProfiles = list
-                            onSuccess(true)
-                        }
+    suspend fun signIn(email: String, password: String): Boolean = withContext(Dispatchers.IO) {
+        try {
+            val authResult = auth.signInWithEmailAndPassword(email, password).await()
+            val user = authResult.user
+
+            if (user != null) {
+                val profile = parseUserToProfile(user.uid)
+                val allUsers = addAllUsers()
+
+                if (profile != null) {
+                    this@EmailPasswordManager.profile = profile.apply {
+                        listOfFollowedProfiles = allUsers
                     }
+                    true
+                } else {
+                    false
                 }
+            } else {
+                false
             }
-            .addOnFailureListener{
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
                 Toast.makeText(context, "User either doesn't exist or the password is wrong", Toast.LENGTH_SHORT).show()
-                onSuccess(false)
             }
+            false
+        }
     }
 
-    private fun addAllUsers(callback : (List<Profile>) -> Unit){
-        val profilesList = mutableListOf<Profile>()
-        database.child("users").get()
-            .addOnSuccessListener { dataSnapshot ->
-                for (childSnapshot in dataSnapshot.children) {
-                    val profile = childSnapshot.getValue(Profile::class.java)
-                    val userId = childSnapshot.key
-                    if (profile != null && userId != auth.currentUser?.uid) {
-                        Log.i("AddedUserInfo", "Added profile : $profile")
-                        observeUserProfile(profile.userId){ updatedProfile ->
-                            updatedProfile?.let { profilesList.add(it) }
-                        }
-                    }
-                }
+    private suspend fun addAllUsers() : List<Profile> = withContext(Dispatchers.IO) {
+        coroutineScope {
+            val dataSnapshot = database.child("users").get().await()
+            val deferredProfiles = dataSnapshot.children.mapNotNull { childSnapshot ->
+                val profile = childSnapshot.getValue(Profile::class.java)
+                val userId = childSnapshot.key
+                if (profile != null && userId != auth.currentUser?.uid) {
+                    async { parseUserToProfile(userId) }
+                } else null
             }
-        callback(profilesList)
+            deferredProfiles.awaitAll().filterNotNull()
+        }
     }
 
     fun resetPassword(email : String, onSuccess: () -> Unit){

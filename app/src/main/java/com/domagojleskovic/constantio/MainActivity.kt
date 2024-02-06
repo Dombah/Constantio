@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.ViewModelProvider
 import com.domagojleskovic.constantio.ui.MainScreen
 import com.domagojleskovic.constantio.ui.ProfileScreen
 import com.domagojleskovic.constantio.ui.RegisterScreen
@@ -16,6 +17,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.domagojleskovic.constantio.ui.ForgotPasswordScreen
 import com.domagojleskovic.constantio.ui.LoginScreen
+import com.domagojleskovic.constantio.ui.SearchScreen
 import com.google.firebase.Firebase
 import com.google.firebase.initialize
 
@@ -32,13 +34,23 @@ class MainActivity : ComponentActivity() {
                 ) {
                     val navController = rememberNavController()
                     val emailPasswordManager = EmailPasswordManager(this)
+
+                    // View models and factories
+                    val searchViewModelFactory = SearchViewModelFactory(emailPasswordManager)
+                    val searchViewModel = ViewModelProvider(this, searchViewModelFactory)[SearchViewModel::class.java]
+
+                    val loginViewModelFactory = LoginViewModelFactory(emailPasswordManager)
+                    val loginViewModel = ViewModelProvider(this, loginViewModelFactory)[LoginViewModel::class.java]
+
+
+
                     NavHost(navController = navController, startDestination = "login") {
                         composable("login") {
                             LoginScreen(
                                 onNavigateForgotPasswordScreen = { navController.navigate("forgot_password")},
                                 onNavigateRegisterScreen = { navController.navigate("register")},
-                                navController,
-                                emailPasswordManager,
+                                onNavigateMainScreen = {navController.navigate("main_screen")},
+                                loginViewModel,
                                 this@MainActivity
                             )
                         }
@@ -47,7 +59,9 @@ class MainActivity : ComponentActivity() {
                             onNavigateProfileScreen = {
                                 navController.navigate("profile")
                             },
-                            navController,
+                            onNavigateSearchScreen = {
+                                navController.navigate("search_screen")
+                            },
                             emailPasswordManager,
                             this@MainActivity
                         ) }
@@ -61,6 +75,9 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 emailPasswordManager = emailPasswordManager
                             )
+                        }
+                        composable("search_screen"){
+                            SearchScreen(searchViewModel)
                         }
                     }
                 }
