@@ -156,7 +156,7 @@ class EmailPasswordManager(
             Log.e("CompressionError", "The compression percentage is out of bounds")
             return@withContext null
         }
-        var bitmap : Bitmap? = null
+        val bitmap : Bitmap?
         try{
             bitmap = when {
                 Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(

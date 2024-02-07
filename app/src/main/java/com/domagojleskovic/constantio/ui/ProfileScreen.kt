@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +52,7 @@ import com.domagojleskovic.constantio.StringConstants
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
@@ -59,53 +61,51 @@ fun ProfileScreen(
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
 
-    var selectedImageUris by remember {
-        mutableStateOf(listOf<Uri>())
+    var postPictureUri by remember {
+        mutableStateOf<Uri?>(null)
     }
-    val multiplePhotoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(),
-        onResult = {
-            selectedImageUris = it
-        }
-    )
-    var selectedImageUri by remember {
-        mutableStateOf(profile?.icon)
-    }
-    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+    val postPhotoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = {
-            selectedImageUri = it
+            postPictureUri = it
+        }
+    )
+    var profilePictureUri by remember {
+        mutableStateOf(profile?.icon)
+    }
+    val profilePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = {
+            profilePictureUri = it
         }
     )
     var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
     var progressBarLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect(selectedImageUris) {
-        if(selectedImageUris.isNotEmpty())
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(postPictureUri) {
+        if(postPictureUri != null)
         {
-            val templist = mutableListOf<Uri?>()
-            selectedImageUris.forEach{ uri ->
-                templist.add(0, uri)
-            }
-            listOfPictures = templist + listOfPictures
+            Log.i("ProfileScreen", "postPictureUri is $postPictureUri")
+            listOfPictures = listOf(postPictureUri) + listOfPictures
             profile?.listOfPictures = listOfPictures
-            /*
-            for (picture in selectedImageUris){
+            coroutineScope.launch {
                 emailPasswordManager.writeUserPicture(
                     isProfilePicture = false,
-                    picture,
-                ){}
-            }*/
-            selectedImageUris = listOf()
-            Log.i("SelectedImageUris", selectedImageUris.toString())
+                    postPictureUri!!,
+                    compressionPercentage = 65,
+                )
+                postPictureUri = null
+            }
         }
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
-    LaunchedEffect(selectedImageUri) {
-        if(selectedImageUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
+    LaunchedEffect(profilePictureUri) {
+        if(profilePictureUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
                 emailPasswordManager.writeUserPicture(
                     isProfilePicture = true,
-                    selectedImageUri as Uri,
+                    profilePictureUri as Uri,
                     compressionPercentage = 75
             ) /*{ uri ->
                 profile = profile!!.copy(icon = uri)
@@ -271,7 +271,7 @@ fun ProfileScreen(
                                 } else {
                                     Button(
                                         onClick = {
-                                            multiplePhotoPickerLauncher.launch(
+                                            postPhotoPickerLauncher.launch(
                                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
                                         },
@@ -285,7 +285,7 @@ fun ProfileScreen(
                                     Button(
                                         onClick = {
                                             progressBarLoading = true
-                                            singlePhotoPickerLauncher.launch(
+                                            profilePhotoPickerLauncher.launch(
                                                 PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                             )
                                         },
