@@ -52,6 +52,7 @@ import com.domagojleskovic.constantio.StringConstants
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -103,15 +104,16 @@ fun ProfileScreen(
     }
     LaunchedEffect(profilePictureUri) {
         if(profilePictureUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
+            coroutineScope.launch {
                 emailPasswordManager.writeUserPicture(
                     isProfilePicture = true,
                     profilePictureUri as Uri,
                     compressionPercentage = 75
-            ) /*{ uri ->
-                profile = profile!!.copy(icon = uri)
+                )
+                profile = profile!!.copy(icon = profilePictureUri)
                 emailPasswordManager.profile = profile!!
                 progressBarLoading = false
-            }*/
+            }
         }
     }
     LazyColumn(

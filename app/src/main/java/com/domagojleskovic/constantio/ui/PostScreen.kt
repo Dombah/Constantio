@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.domagojleskovic.constantio.R
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
@@ -49,33 +50,34 @@ fun Post(
     post: Post
 ) {
     val roundedCornerShape = 8
+    /*
     var imageLiked by remember { mutableStateOf(post.liked) }
     val imageId = when (imageLiked){
         true -> R.drawable.liked
         false -> R.drawable.like
-    }
-            Column(
+    }*/
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+    ) {
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = LightRedTransparent_Palette
+            )
+        ) {
+            AsyncImage(
+                model = post.image,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-            ) {
-                Card (
-                    colors = CardDefaults.cardColors(
-                        containerColor = LightRedTransparent_Palette
-                    )
-                ){
-                    Image(
-                        painter = painterResource(id = post.image),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                            .clip(RoundedCornerShape(roundedCornerShape.dp))
+                    .fillMaxWidth()
+                    .height(300.dp)
+                    .clip(RoundedCornerShape(roundedCornerShape.dp))
                     .border(1.dp, LightRed_Palette, RoundedCornerShape(roundedCornerShape.dp))
             )
-            Row{
-                Image(
+            Row {
+                /*Image(
                     painter = painterResource(id = imageId),
                     contentDescription = null,
                     modifier = Modifier
@@ -85,7 +87,7 @@ fun Post(
                         .clickable {
                             imageLiked = !imageLiked
                         }
-                )
+                )*/
                 Image(
                     painter = painterResource(id = R.drawable.add_comment),
                     contentDescription = null,
@@ -99,23 +101,25 @@ fun Post(
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
-            Row (
+            Row(
                 modifier = Modifier.padding(start = 8.dp)
-            ){
+            ) {
                 Text(
-                    "@${post.profile}: ${post.description}",
+                    "@${post.userId}: ${post.description}",
                     color = Color.White,
                     softWrap = true,
-                    fontSize = 24.sp)
+                    fontSize = 24.sp
+                )
             }
             Spacer(modifier = Modifier.height(16.dp))
-            for (comment in post.comments){
+            for (comment in post.comments) {
                 Text(
                     text = "@${comment.profile}: $comment",
                     color = Color.White,
                     softWrap = true,
                     modifier = Modifier.padding(start = 8.dp, bottom = 4.dp),
-                    fontSize = 18.sp)
+                    fontSize = 18.sp
+                )
             }
         }
     }

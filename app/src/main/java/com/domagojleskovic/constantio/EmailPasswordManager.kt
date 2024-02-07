@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
+import com.domagojleskovic.constantio.ui.Post
 import com.domagojleskovic.constantio.ui.Profile
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -196,60 +197,16 @@ class EmailPasswordManager(
         try{
             val result = storage.putBytes(compressedData).await()
             if(result != null){
+                if(!isProfilePicture){
+                    val post = Post(description = "New picture", userId = getCurrentUser()?.uid, uniqueUUID = uniqueUUID)
+                    database.child("posts").child(getCurrentUser()!!.uid).child(uniqueUUID).setValue(post).await()
+                }
                 return@withContext imageUri
             }
         }catch (e : Exception){
             return@withContext null
         }
         null
-        /*
-        if(compressionPercentage < 0 || compressionPercentage > 100){
-            Log.e("CompressionError", "The compression percentage is out of bounds")
-            return
-        }
-        var bitmap : Bitmap? = null
-        try{
-            bitmap = when {
-                Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(
-                    context.contentResolver,
-                    imageUri
-                )
-                else -> {
-                    val source = ImageDecoder.createSource(context.contentResolver, imageUri)
-                    ImageDecoder.decodeBitmap(source)
-                }
-            }
-        }catch(e : Exception){
-            Log.e("WritingUserError","Error " + e.message)
-        }
-
-        val timestamp = if (Build.VERSION.SDK_INT < 26) {
-            SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
-        } else {
-            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
-        }
-
-        val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100 - compressionPercentage, byteArrayOutputStream)
-        val compressedData = byteArrayOutputStream.toByteArray()
-
-        val uniqueUUID = UUID.randomUUID().toString()
-        val storageRef = FirebaseStorage.getInstance().reference
-        storage = when {
-            isProfilePicture -> {
-                storageRef.child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
-            }
-            else -> {
-                storageRef.child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
-            }
-        }
-        storage.putBytes(compressedData).addOnSuccessListener {
-            callback(imageUri)
-        }
-            .addOnFailureListener{
-                callback(null)
-            }
-         */
     }
     fun getUserImageUri(userId: String? ,callback: (Uri?) -> Unit) {
         storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserProfilePicturePath+userId)

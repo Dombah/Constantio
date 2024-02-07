@@ -69,19 +69,15 @@ data class Profile(
         else
             name as String
     }
-
-    fun setIconFromString(iconString: String) {
-        this.icon = Uri.parse(iconString)
-    }
 }
 
 data class Post(
-    @DrawableRes var image: Int,
-    var description : String,
-    val profile : Profile,
-    var comments : List<Comment>,
-    var liked : Boolean = false,
-    var datePosted : Date
+    var image : Uri? = null,
+    var description : String? = null,
+    val userId: String? = null,
+    val uniqueUUID : String? = null,
+    var comments : List<Comment> = listOf(),
+    var datePosted : Long = System.currentTimeMillis()
 )
 
 data class Comment(
