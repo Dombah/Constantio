@@ -2,7 +2,6 @@ package com.domagojleskovic.constantio.ui
 
 import android.content.Context
 import android.net.Uri
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -42,7 +41,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.domagojleskovic.constantio.EmailPasswordManager
@@ -51,7 +49,6 @@ import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.google.firebase.database.IgnoreExtraProperties
-import java.util.Date
 
 @IgnoreExtraProperties
 data class Profile(
@@ -76,18 +73,8 @@ data class Post(
     var description : String? = null,
     val userId: String? = null,
     val uniqueUUID : String? = null,
-    var comments : List<Comment> = listOf(),
     var datePosted : Long = System.currentTimeMillis()
 )
-
-data class Comment(
-    val profile : Profile,
-    var text : String
-){
-    override fun toString(): String {
-        return text
-    }
-}
 
 /*
 val listOfProfiles = mutableListOf<Profile>(

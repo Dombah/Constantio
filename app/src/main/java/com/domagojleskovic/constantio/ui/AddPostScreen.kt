@@ -18,7 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Divider
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProgressIndicatorDefaults
@@ -48,7 +48,6 @@ import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPostScreen(
     image : String?,
@@ -68,7 +67,7 @@ fun AddPostScreen(
     val gradient = Brush.verticalGradient(
         colorStops = arrayOf(
             0.0f to DarkBlue_Palette,
-            0.2f to Brownish_Palette,
+            0.5f to Brownish_Palette,
         )
     )
 
@@ -97,14 +96,20 @@ fun AddPostScreen(
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
+                    .padding(16.dp),
             ) {
                 Text(
-                    text = "Constantio", fontSize = 48.sp,
+                    text = "Constantio", fontSize = 36.sp,
                     fontFamily = FontFamily.Cursive,
                     fontWeight = FontWeight.W700,
                     color = Color.White
                 )
             }
+            Divider(
+                thickness = 2.dp,
+                color = LightRed_Palette,
+                modifier = Modifier.padding(start = 16.dp, end = 16.dp)
+            )
             Spacer(modifier = Modifier.height(60.dp))
             Row(
                 modifier = Modifier
@@ -163,16 +168,20 @@ fun AddPostScreen(
             ) {
                 Button(
                     onClick = {
-                        isLoading = true
-                        writePostToDatabase(
-                            coroutineScope = coroutineScope,
-                            emailPasswordManager = emailPasswordManager,
-                            imageUri = imageUri
-                        ){
-                            listOfPictures = listOf(imageUri) + listOfPictures
-                            profile.listOfPictures = listOfPictures
-                            isLoading = false
-                            onAddPost()
+                        if(descriptionEntered != "")
+                        {
+                            isLoading = true
+                            writePostToDatabase(
+                                coroutineScope = coroutineScope,
+                                emailPasswordManager = emailPasswordManager,
+                                imageUri = imageUri,
+                                description = descriptionEntered
+                            ){
+                                listOfPictures = listOf(imageUri) + listOfPictures
+                                profile.listOfPictures = listOfPictures
+                                isLoading = false
+                                onAddPost()
+                            }
                         }
                     },
                     modifier = Modifier.width(150.dp),
@@ -190,13 +199,14 @@ private fun writePostToDatabase(
     coroutineScope: CoroutineScope,
     emailPasswordManager : EmailPasswordManager,
     imageUri : Uri,
+    description : String,
     onSuccess : () -> Unit
 ){
     coroutineScope.launch {
-        emailPasswordManager.writeUserPicture(
-            isProfilePicture = false,
-            imageUri,
+        emailPasswordManager.writeUserPost(
+            imageUri = imageUri,
             compressionPercentage = 65,
+            description = description
         )
         onSuccess()
     }

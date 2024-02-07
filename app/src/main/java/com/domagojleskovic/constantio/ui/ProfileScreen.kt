@@ -89,8 +89,7 @@ fun ProfileScreen(
     LaunchedEffect(profilePictureUri) {
         if(profilePictureUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
             coroutineScope.launch {
-                emailPasswordManager.writeUserPicture(
-                    isProfilePicture = true,
+                emailPasswordManager.writeUserProfilePicture(
                     profilePictureUri as Uri,
                     compressionPercentage = 75
                 )

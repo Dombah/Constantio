@@ -17,21 +17,15 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.database.getValue
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -52,7 +46,6 @@ import kotlin.coroutines.suspendCoroutine
 class EmailPasswordManager(
     private val context: Context,
 ) {
-
     private var auth: FirebaseAuth = Firebase.auth
     private val database: DatabaseReference = Firebase.database.reference
     private lateinit var storage : StorageReference
@@ -97,8 +90,7 @@ class EmailPasswordManager(
         try{
             database.child("users").child(userId).setValue(user).await()
             val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-            val returnedUri = writeUserPicture(
-                isProfilePicture = true,
+            val returnedUri = writeUserProfilePicture(
                 imageUri,
                 compressionPercentage = 75,
             )
@@ -112,19 +104,10 @@ class EmailPasswordManager(
             false
         }
     }
-    suspend fun writeUserPicture(
-        isProfilePicture: Boolean,
-        imageUri : Uri,
-        compressionPercentage : Int = 20,
-    ) : Uri? = withContext(Dispatchers.IO){
 
-        if(compressionPercentage < 0 || compressionPercentage > 100){
-            Log.e("CompressionError", "The compression percentage is out of bounds")
-            return@withContext null
-        }
-        val bitmap : Bitmap?
-        try{
-            bitmap = when {
+    private fun getImageBitmap(imageUri: Uri) : Bitmap? {
+        return try {
+            when {
                 Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(
                     context.contentResolver,
                     imageUri
@@ -134,38 +117,83 @@ class EmailPasswordManager(
                     ImageDecoder.decodeBitmap(source)
                 }
             }
-        }catch(e : Exception){
-            Log.e("WritingUserError","Error " + e.message)
-            return@withContext null
         }
-
-        val timestamp = if (Build.VERSION.SDK_INT < 26) {
+        catch (e : Exception){
+            Log.e("BitmapError", "${e.message}")
+            null
+        }
+    }
+    private fun getCurrentTime() : String{
+        return if (Build.VERSION.SDK_INT < 26) {
             SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
         } else {
             DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
         }
 
+    }
+
+    private fun compressImage(bitmap : Bitmap?, compressionPercentage : Int) : ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap?.compress(Bitmap.CompressFormat.JPEG, 100 - compressionPercentage, byteArrayOutputStream)
-        val compressedData = byteArrayOutputStream.toByteArray()
+        return byteArrayOutputStream.toByteArray()
+    }
+
+    suspend fun writeUserPost(
+        imageUri : Uri,
+        compressionPercentage : Int = 65,
+        description : String = ""
+    ) : Post? = withContext(Dispatchers.IO){
+
+        if(compressionPercentage < 0 || compressionPercentage > 100){
+            Log.e("CompressionError", "The compression percentage is out of bounds")
+            return@withContext null
+        }
+        val bitmap = getImageBitmap(imageUri)
+        val timestamp = getCurrentTime()
+        val compressedImage = compressImage(bitmap, compressionPercentage)
+        if(bitmap == null){
+            return@withContext null
+        }
 
         val uniqueUUID = UUID.randomUUID().toString()
         val storageRef = FirebaseStorage.getInstance().reference
-        storage = when {
-            isProfilePicture -> {
-                storageRef.child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
-            }
-            else -> {
-                storageRef.child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
-            }
-        }
+        .child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
+
         try{
-            val result = storage.putBytes(compressedData).await()
+            val result = storageRef.putBytes(compressedImage).await()
             if(result != null){
-                if(!isProfilePicture){
-                    val post = Post(description = "New picture", userId = getCurrentUser()?.uid, uniqueUUID = uniqueUUID)
-                    database.child("posts").child(getCurrentUser()!!.uid).child(uniqueUUID).setValue(post).await()
-                }
+                val post = Post(description = description, userId = getCurrentUser()?.uid, uniqueUUID = uniqueUUID)
+                database.child("posts").child(getCurrentUser()!!.uid).child(uniqueUUID).setValue(post).await()
+                return@withContext post
+            }
+        }catch (e : Exception){
+            return@withContext null
+        }
+        null
+    }
+
+
+    suspend fun writeUserProfilePicture(
+        imageUri : Uri,
+        compressionPercentage : Int = 20,
+    ) : Uri? = withContext(Dispatchers.IO){
+
+        if(compressionPercentage < 0 || compressionPercentage > 100){
+            Log.e("CompressionError", "The compression percentage is out of bounds")
+            return@withContext null
+        }
+        val bitmap = getImageBitmap(imageUri)
+        val compressedImage = compressImage(bitmap, compressionPercentage)
+        if(bitmap == null){
+            return@withContext null
+        }
+
+        val storageRef = FirebaseStorage.getInstance().reference
+        .child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
+
+        try{
+            val result = storageRef.putBytes(compressedImage).await()
+            if(result != null){
                 return@withContext imageUri
             }
         }catch (e : Exception){
