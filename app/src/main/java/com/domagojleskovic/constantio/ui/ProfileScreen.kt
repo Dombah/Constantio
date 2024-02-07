@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -27,7 +25,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,24 +37,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.domagojleskovic.constantio.EmailPasswordManager
-import com.domagojleskovic.constantio.R
-import com.domagojleskovic.constantio.StringConstants
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
-    emailPasswordManager: EmailPasswordManager
+    emailPasswordManager: EmailPasswordManager,
+    onNavigateAddPostScreen : (Uri?) -> Unit
 ) {
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
@@ -80,7 +74,7 @@ fun ProfileScreen(
             profilePictureUri = it
         }
     )
-    var listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
+    val listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
     var progressBarLoading by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
@@ -88,17 +82,7 @@ fun ProfileScreen(
     LaunchedEffect(postPictureUri) {
         if(postPictureUri != null)
         {
-            Log.i("ProfileScreen", "postPictureUri is $postPictureUri")
-            listOfPictures = listOf(postPictureUri) + listOfPictures
-            profile?.listOfPictures = listOfPictures
-            coroutineScope.launch {
-                emailPasswordManager.writeUserPicture(
-                    isProfilePicture = false,
-                    postPictureUri!!,
-                    compressionPercentage = 65,
-                )
-                postPictureUri = null
-            }
+            onNavigateAddPostScreen(postPictureUri)
         }
         Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
     }
@@ -185,22 +169,13 @@ fun ProfileScreen(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
-                                horizontalArrangement = Arrangement.End
+                                horizontalArrangement = Arrangement.Center
                             ) {
                                 Text(
-                                    text = "Constantio", fontSize = 48.sp,
+                                    text = "Constantio", fontSize = 36.sp,
                                     fontFamily = FontFamily.Cursive,
                                     fontWeight = FontWeight.W700,
                                     color = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(70.dp))
-                                Image(
-                                    painter = painterResource(id = R.drawable.send_red),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .width(36.dp)
-                                        .height(36.dp)
-                                        .padding(top = 8.dp)
                                 )
                             }
                             Divider(

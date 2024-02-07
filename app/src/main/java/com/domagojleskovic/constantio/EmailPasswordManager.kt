@@ -30,6 +30,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
@@ -90,19 +91,6 @@ class EmailPasswordManager(
             }
             false
         }
-        /*
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    Log.d(TAG, "createUserWithEmail:success")
-                    val user = auth.currentUser!!
-                    writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email, onSuccess)
-                }
-            }
-            .addOnFailureListener{
-                exception ->
-                displayAuthenticationException(exception)
-            }*/
     }
     private suspend fun writeNewUser(userId: String, name: String, email: String) : Boolean = withContext(Dispatchers.IO){
         val user = Profile(userId = userId, name = name, email = email)
@@ -123,29 +111,6 @@ class EmailPasswordManager(
         }catch(e : Exception){
             false
         }
-        /*
-
-
-            .addOnSuccessListener {
-                Log.d("FirebaseWrite", "User data written successfully")
-                val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-                writeUserPicture(
-                    isProfilePicture = true,
-                    imageUri,
-                    compressionPercentage = 75
-                ) {
-                    uri ->
-                    if(uri != null){
-                        profile = Profile(uri, userId,name,email)
-                        onSuccess()
-                    }else{
-                        Toast.makeText(context, "Error writing user picture", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            .addOnFailureListener { e ->
-                Log.e("FirebaseWrite", "Error writing user data", e)
-            }*/
     }
     suspend fun writeUserPicture(
         isProfilePicture: Boolean,
