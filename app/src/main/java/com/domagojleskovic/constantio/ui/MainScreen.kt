@@ -210,19 +210,32 @@ fun MainScreen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "Activity:", fontSize = 36.sp,
+                        Text(text = "Activity", fontSize = 36.sp,
                             fontFamily = FontFamily.Cursive,
                             fontWeight = FontWeight.W700,
                             color = Color.White)
                     }
                 }
             }
+            if(profile!!.listOfFollowedProfiles.isEmpty())
+            {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "No Activity", fontSize = 36.sp,
+                        fontFamily = FontFamily.Cursive,
+                        fontWeight = FontWeight.W700,
+                        color = Color.White)
+                }
+            }
         }
-        items(profile!!.listOfFollowedProfiles) { profile ->
+        val listOfFollowedProfiles = profile!!.listOfFollowedProfiles
+        items(listOfFollowedProfiles) { followedProfile ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                profile.listOfPictures.forEach { imageUri ->
+                followedProfile.listOfPictures.forEach { imageUri ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -241,6 +254,8 @@ fun MainScreen(
                     }
                 }
             }
+        }
+        item{
             Spacer(modifier = Modifier.height(16.dp))
         }
     }

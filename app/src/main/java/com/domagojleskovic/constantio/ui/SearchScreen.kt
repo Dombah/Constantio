@@ -144,7 +144,7 @@ fun SearchScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    horizontalArrangement = Arrangement.Start
+                    horizontalArrangement = Arrangement.Start,
                 ){
                     AsyncImage(
                         model = profile.icon,

@@ -74,7 +74,22 @@ class EmailPasswordManager(
         }
     }
 
-    fun createAccount(email: String, password: String, onSuccess: () -> Unit) {
+    suspend fun createAccount(email: String, password: String) : Boolean = withContext(Dispatchers.IO){
+        try{
+            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+            val user = authResult.user
+
+            if(user != null){
+                writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email)
+            }
+            true
+        }catch (e : Exception){
+            withContext(Dispatchers.Main) {
+                displayAuthenticationException(e)
+            }
+            false
+        }
+        /*
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -86,11 +101,30 @@ class EmailPasswordManager(
             .addOnFailureListener{
                 exception ->
                 displayAuthenticationException(exception)
-            }
+            }*/
     }
-    private fun writeNewUser(userId: String, name: String, email: String, onSuccess: () -> Unit) {
+    private suspend fun writeNewUser(userId: String, name: String, email: String) : Boolean = withContext(Dispatchers.IO){
         val user = Profile(userId = userId, name = name, email = email)
-        database.child("users").child(userId).setValue(user)
+        try{
+            database.child("users").child(userId).setValue(user).await()
+            val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
+            val returnedUri = writeUserPicture(
+                isProfilePicture = true,
+                imageUri,
+                compressionPercentage = 75,
+            )
+            if(returnedUri != null){
+                profile = Profile(returnedUri, userId,name,email)
+                true
+            }else{
+                false
+            }
+        }catch(e : Exception){
+            false
+        }
+        /*
+
+
             .addOnSuccessListener {
                 Log.d("FirebaseWrite", "User data written successfully")
                 val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
@@ -110,14 +144,65 @@ class EmailPasswordManager(
             }
             .addOnFailureListener { e ->
                 Log.e("FirebaseWrite", "Error writing user data", e)
-            }
+            }*/
     }
-    fun writeUserPicture(
+    suspend fun writeUserPicture(
         isProfilePicture: Boolean,
         imageUri : Uri,
         compressionPercentage : Int = 20,
-        callback : (Uri?) -> Unit
-    ){
+    ) : Uri? = withContext(Dispatchers.IO){
+
+        if(compressionPercentage < 0 || compressionPercentage > 100){
+            Log.e("CompressionError", "The compression percentage is out of bounds")
+            return@withContext null
+        }
+        var bitmap : Bitmap? = null
+        try{
+            bitmap = when {
+                Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(
+                    context.contentResolver,
+                    imageUri
+                )
+                else -> {
+                    val source = ImageDecoder.createSource(context.contentResolver, imageUri)
+                    ImageDecoder.decodeBitmap(source)
+                }
+            }
+        }catch(e : Exception){
+            Log.e("WritingUserError","Error " + e.message)
+            return@withContext null
+        }
+
+        val timestamp = if (Build.VERSION.SDK_INT < 26) {
+            SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
+        } else {
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
+        }
+
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100 - compressionPercentage, byteArrayOutputStream)
+        val compressedData = byteArrayOutputStream.toByteArray()
+
+        val uniqueUUID = UUID.randomUUID().toString()
+        val storageRef = FirebaseStorage.getInstance().reference
+        storage = when {
+            isProfilePicture -> {
+                storageRef.child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
+            }
+            else -> {
+                storageRef.child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
+            }
+        }
+        try{
+            val result = storage.putBytes(compressedData).await()
+            if(result != null){
+                return@withContext imageUri
+            }
+        }catch (e : Exception){
+            return@withContext null
+        }
+        null
+        /*
         if(compressionPercentage < 0 || compressionPercentage > 100){
             Log.e("CompressionError", "The compression percentage is out of bounds")
             return
@@ -164,6 +249,7 @@ class EmailPasswordManager(
             .addOnFailureListener{
                 callback(null)
             }
+         */
     }
     fun getUserImageUri(userId: String? ,callback: (Uri?) -> Unit) {
         storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserProfilePicturePath+userId)

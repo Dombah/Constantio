@@ -16,6 +16,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import okhttp3.internal.wait
 
 class SearchViewModel(
     val emailPasswordManager: EmailPasswordManager
@@ -40,10 +41,17 @@ class SearchViewModel(
                     .startAt(query)
                     .endAt("$query\uf8ff")
 
-                filteredQuery.addValueEventListener(object : ValueEventListener {
+                filteredQuery.addListenerForSingleValueEvent(object : ValueEventListener {
                     override fun onDataChange(snapshot: DataSnapshot) {
-                        val profiles = snapshot.children.mapNotNull { it.getValue(Profile::class.java) }
-
+                        viewModelScope.launch {
+                            val profiles = snapshot.children.mapNotNull { it.getValue(Profile::class.java) }
+                            val updatedProfiles = profiles.map {
+                                async { emailPasswordManager.parseUserToProfile(it.userId) }
+                            }.awaitAll().filterNotNull().filter {
+                                it.userId != emailPasswordManager.getCurrentUser()?.uid
+                            }
+                            _searchResults.value = updatedProfiles
+                        }
                     }
                     override fun onCancelled(error: DatabaseError) {
                         Log.w("FirebaseSearch", "Failed to read value.", error.toException())

@@ -89,12 +89,13 @@ fun ProfileScreen(
             }
             listOfPictures = templist + listOfPictures
             profile?.listOfPictures = listOfPictures
+            /*
             for (picture in selectedImageUris){
                 emailPasswordManager.writeUserPicture(
                     isProfilePicture = false,
                     picture,
                 ){}
-            }
+            }*/
             selectedImageUris = listOf()
             Log.i("SelectedImageUris", selectedImageUris.toString())
         }
@@ -106,11 +107,11 @@ fun ProfileScreen(
                     isProfilePicture = true,
                     selectedImageUri as Uri,
                     compressionPercentage = 75
-            ) { uri ->
+            ) /*{ uri ->
                 profile = profile!!.copy(icon = uri)
                 emailPasswordManager.profile = profile!!
                 progressBarLoading = false
-            }
+            }*/
         }
     }
     LazyColumn(

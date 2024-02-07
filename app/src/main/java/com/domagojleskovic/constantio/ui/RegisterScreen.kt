@@ -30,7 +30,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,22 +49,41 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.domagojleskovic.constantio.EmailPasswordManager
+import com.domagojleskovic.constantio.LoginViewModel
 import com.domagojleskovic.constantio.R
+import com.domagojleskovic.constantio.RegisterViewModel
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 @Composable
 fun RegisterScreen(
-    emailPasswordManager: EmailPasswordManager,
-    navController:NavController,
+    onNavigateMainScreen : () -> Unit,
+    viewModel: RegisterViewModel = viewModel(),
     context: Context
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("")}
     var passwordVisible by remember { mutableStateOf(false)}
-    var progressBarLoading by remember { mutableStateOf(false)}
+
+    val isLoading by viewModel.isLoading.observeAsState()
+    val registerStatus by viewModel.registerStatus.observeAsState()
+
+    LaunchedEffect(registerStatus) {
+        if (registerStatus == true) {
+            onNavigateMainScreen()
+            viewModel.clearRegisterStatus()
+        } else if (registerStatus == false) {
+            viewModel.clearRegisterStatus()
+        }
+    }
+    DisposableEffect(Unit){
+        onDispose {
+            viewModel.clearRegisterStatus()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -70,7 +92,7 @@ fun RegisterScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if(progressBarLoading){
+        if(isLoading == true){
             CircularProgressIndicator(
                 trackColor = Color.White,
                 strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
@@ -146,11 +168,7 @@ fun RegisterScreen(
                     if(confirmPassword != password){
                         Toast.makeText(context, "Passwords don't match", Toast.LENGTH_SHORT).show()
                     }else {
-                        progressBarLoading = true
-                        emailPasswordManager.createAccount(email, password) {
-                            navController.navigate("main_screen")
-                            progressBarLoading = false
-                        }
+                        viewModel.register(email, password)
                     }
                 },
                 modifier = Modifier.width(150.dp),

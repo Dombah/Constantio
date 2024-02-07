@@ -35,26 +35,28 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     val emailPasswordManager = EmailPasswordManager(this)
 
-                    // View models and factories
-                    val searchViewModelFactory = SearchViewModelFactory(emailPasswordManager)
-                    val searchViewModel = ViewModelProvider(this, searchViewModelFactory)[SearchViewModel::class.java]
-
-                    val loginViewModelFactory = LoginViewModelFactory(emailPasswordManager)
-                    val loginViewModel = ViewModelProvider(this, loginViewModelFactory)[LoginViewModel::class.java]
-
-
+                    // View models
+                    val searchViewModel = SearchViewModel(emailPasswordManager)
+                    val loginViewModel = LoginViewModel(emailPasswordManager)
+                    val registerViewModel = RegisterViewModel(emailPasswordManager)
 
                     NavHost(navController = navController, startDestination = "login") {
                         composable("login") {
                             LoginScreen(
-                                onNavigateForgotPasswordScreen = { navController.navigate("forgot_password")},
-                                onNavigateRegisterScreen = { navController.navigate("register")},
-                                onNavigateMainScreen = {navController.navigate("main_screen")},
-                                loginViewModel,
+                                onNavigateForgotPasswordScreen = { navController.navigate("forgot_password") },
+                                onNavigateRegisterScreen = { navController.navigate("register") },
+                                onNavigateMainScreen = { navController.navigate("main_screen") },
+                                viewModel = loginViewModel,
                                 this@MainActivity
                             )
                         }
-                        composable("register") { RegisterScreen(emailPasswordManager, navController, this@MainActivity) }
+                        composable("register") {
+                            RegisterScreen(
+                                onNavigateMainScreen = { navController.navigate("main_screen") },
+                                viewModel = registerViewModel,
+                                context = this@MainActivity
+                            )
+                        }
                         composable("main_screen") { MainScreen(
                             onNavigateProfileScreen = {
                                 navController.navigate("profile")
@@ -77,7 +79,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("search_screen"){
-                            SearchScreen(searchViewModel)
+                            SearchScreen(
+                                viewModel = searchViewModel
+                            )
                         }
                     }
                 }
