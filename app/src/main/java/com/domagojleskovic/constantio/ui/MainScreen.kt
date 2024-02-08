@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -98,22 +97,11 @@ val listOfProfiles = mutableListOf<Profile>(
 
 @Composable
 fun MainScreen(
-    onNavigateProfileScreen : () -> Unit,
+    onNavigateProfileScreen : (String?) -> Unit,
     onNavigateSearchScreen : () -> Unit,
     emailPasswordManager: EmailPasswordManager,
     context: Context
 ) {
-    val listOfProfiles = mutableListOf<Profile>(
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null",  "Marko", "Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"), "null", "Constantin","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Yeaah","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Lego","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Constantin","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Yeaah","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com"),
-        Profile(Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}"),"null", "Wassup","Markic@gmail.com")
-    )
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
     val scrollState = rememberLazyListState()
@@ -125,7 +113,6 @@ fun MainScreen(
             return@forEach
         }
     }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -136,7 +123,7 @@ fun MainScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp)
+                    .height(150.dp)
                     .background(DarkBlue_Palette)
             ){
                 Box(
@@ -148,7 +135,7 @@ fun MainScreen(
                                     Color.Transparent,
                                     Brownish_Palette
                                 ),
-                                startY = 200f
+                                startY = 180f
                             )
                         )
                 )
@@ -169,7 +156,7 @@ fun MainScreen(
                                 .clip(CircleShape)
                                 .border(2.dp, Brownish_Palette, CircleShape)
                                 .clickable {
-                                    profile?.let { onNavigateProfileScreen() }
+                                    profile?.let { onNavigateProfileScreen(profile?.userId) }
                                 }
                         )
                         Spacer(modifier = Modifier.width(70.dp))
@@ -196,21 +183,18 @@ fun MainScreen(
                         color = LightRed_Palette,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp)
                     )
-                    LazyRow(modifier = Modifier.fillMaxWidth()){
-                        items(listOfProfiles){ profile ->
-                            StoryIcon(profile = profile)
-                        }
-                    }
-                    Column(
-                        modifier = Modifier.fillMaxSize(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "Activity", fontSize = 36.sp,
-                            fontFamily = FontFamily.Cursive,
-                            fontWeight = FontWeight.W700,
-                            color = Color.White)
-                    }
                 }
+            }
+        }
+        item{
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "Activity", fontSize = 36.sp,
+                    fontFamily = FontFamily.Cursive,
+                    fontWeight = FontWeight.W700,
+                    color = Color.White)
             }
             if(showActivity){
                 Column(
@@ -233,8 +217,9 @@ fun MainScreen(
             ) {
                 followedProfile.listOfPosts.forEach { post ->
                     Post(
+                        onNavigateProfileScreen = { onNavigateProfileScreen(it) },
                         profile = followedProfile,
-                        post = post,
+                        post = post
                     )
                 }
             }

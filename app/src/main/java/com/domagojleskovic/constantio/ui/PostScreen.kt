@@ -2,6 +2,7 @@ package com.domagojleskovic.constantio.ui
 
 import android.net.Uri
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,6 +49,7 @@ fun PostPreview() {
 
 @Composable
 fun Post(
+    onNavigateProfileScreen : (String) -> Unit,
     profile : Profile,
     post: Post,
 ) {
@@ -64,6 +66,9 @@ fun Post(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable {
+                        profile.userId?.let { onNavigateProfileScreen(it) }
+                    }
             ){
                 Spacer(modifier = Modifier.padding(start = 16.dp))
                 AsyncImage(model = profile.icon,

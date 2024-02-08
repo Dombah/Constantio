@@ -46,15 +46,37 @@ import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileScreen(
+    userId: String?,
     emailPasswordManager: EmailPasswordManager,
     onNavigateAddPostScreen : (Uri?) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
+    var progressBarLoading by remember { mutableStateOf(false) }
+
     var profile by remember { mutableStateOf<Profile?>(null) }
-    profile = emailPasswordManager.profile
+    var listOfPosts by remember { mutableStateOf(profile?.listOfPosts ?: emptyList()) }
+    val isUserProfileOwner = userId == emailPasswordManager.getCurrentUser()?.uid
+    if(isUserProfileOwner){
+        profile = emailPasswordManager.profile
+        listOfPosts = profile!!.listOfPosts
+    }
+    else{
+        LaunchedEffect(Unit){
+            progressBarLoading = true
+            coroutineScope.async {
+                profile = emailPasswordManager.parseUserToProfile(userId)
+            }.await()
+            progressBarLoading = false
+            listOfPosts = profile!!.listOfPosts
+        }
+    }
+
+    val name = profile?.name ?: "Default Name" // Provides a default name if null
 
     var postPictureUri by remember {
         mutableStateOf<Uri?>(null)
@@ -74,10 +96,6 @@ fun ProfileScreen(
             profilePictureUri = it
         }
     )
-    val listOfPosts by remember { mutableStateOf(profile?.listOfPosts ?: emptyList()) }
-    var progressBarLoading by remember { mutableStateOf(false) }
-
-    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(postPictureUri) {
         if(postPictureUri != null)
@@ -190,7 +208,7 @@ fun ProfileScreen(
                                     modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
-                                        text = profile?.name as String, fontSize = 28.sp,
+                                        text = name, fontSize = 28.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
                                         color = Color.White,
@@ -225,7 +243,7 @@ fun ProfileScreen(
                                     .fillMaxWidth()
                                     .padding(start = 16.dp)
                             ) {
-                                if (profile?.userId != emailPasswordManager.getCurrentUser()?.uid) {
+                                if (!isUserProfileOwner) {
                                     Button(
                                         onClick = { /*TODO*/ },
                                         colors = ButtonDefaults.buttonColors(
@@ -235,15 +253,6 @@ fun ProfileScreen(
                                         Text(text = "Follow")
                                     }
                                     Spacer(modifier = Modifier.padding(8.dp))
-                                    /* TODO -> Implement only if enough time
-                                Button(
-                                    onClick = { /*TODO*/ },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = LightRed_Palette
-                                    )
-                                ) {
-                                    Text(text = "Message")
-                                }*/
                                 } else {
                                     Button(
                                         onClick = {

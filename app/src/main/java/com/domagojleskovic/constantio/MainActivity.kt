@@ -61,8 +61,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("main_screen") { MainScreen(
-                            onNavigateProfileScreen = {
-                                navController.navigate("profile")
+                            onNavigateProfileScreen = {userId->
+                                navController.navigate("profile/$userId")
                             },
                             onNavigateSearchScreen = {
                                 navController.navigate("search_screen")
@@ -70,11 +70,16 @@ class MainActivity : ComponentActivity() {
                             emailPasswordManager,
                             this@MainActivity
                         ) }
-                        composable("profile"){
+                        composable(
+                            route = "profile/{userId}",
+                            arguments = listOf(navArgument("userId") { type = NavType.StringType })
+                        ){
+                            val userId = it.arguments?.getString("userId")
                             ProfileScreen(
+                                userId,
                                 emailPasswordManager,
-                                onNavigateAddPostScreen = {
-                                    val uriString = Uri.encode(it.toString())
+                                onNavigateAddPostScreen = {uri ->
+                                    val uriString = Uri.encode(uri.toString())
                                     navController.navigate("add_post_screen/$uriString")
                                 }
                             )
