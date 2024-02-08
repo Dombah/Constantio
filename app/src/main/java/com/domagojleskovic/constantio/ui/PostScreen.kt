@@ -32,21 +32,6 @@ import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRedTransparent_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 
-@Preview(showBackground = true)
-@Composable
-fun PostPreview() {
-    val context = LocalContext.current
-    val postUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-    val post = Post(
-        image = postUri,
-        description = "Wow, you are so gay",
-        userId = "eKopiKNVErZ6Vd5qyl1BA5fnySJ3",
-        uniqueUUID = null,
-        datePosted = System.currentTimeMillis()
-        )
-    //Post(null , post, "Doctor")
-}
-
 @Composable
 fun Post(
     onNavigateProfileScreen : (String) -> Unit,
@@ -54,9 +39,7 @@ fun Post(
     post: Post,
 ) {
     val roundedCornerShape = 8.dp
-    Column(
-        modifier = Modifier
-    ) {
+    Column {
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = LightRedTransparent_Palette
@@ -111,5 +94,4 @@ fun Post(
             Spacer(modifier = Modifier.height(16.dp))
         }
     }
-    Spacer(modifier = Modifier.height(16.dp))
 }

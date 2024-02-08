@@ -210,22 +210,18 @@ fun MainScreen(
         }
         val listOfFollowedProfiles = profile!!.listOfFollowedProfiles
         items(listOfFollowedProfiles) { followedProfile ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .padding(8.dp)
-            ) {
-                followedProfile.listOfPosts.forEach { post ->
+            followedProfile.listOfPosts.forEach { post ->
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
                     Post(
                         onNavigateProfileScreen = { onNavigateProfileScreen(it) },
                         profile = followedProfile,
                         post = post
                     )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
             }
-        }
-        item{
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
