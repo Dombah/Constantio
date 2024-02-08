@@ -48,125 +48,149 @@ class EmailPasswordManager(
 ) {
     private var auth: FirebaseAuth = Firebase.auth
     private val database: DatabaseReference = Firebase.database.reference
-    private lateinit var storage : StorageReference
-    lateinit var profile : Profile
+    private lateinit var storage: StorageReference
+    lateinit var profile: Profile
 
-    fun getCurrentUser() : FirebaseUser?{
+    fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
-    private fun getDBO() : DatabaseReference{
+
+    private fun getDBO(): DatabaseReference {
         return database
     }
-    private fun displayAuthenticationException(exception: Exception){
-        try{
+
+    private fun displayAuthenticationException(exception: Exception) {
+        try {
             throw exception
-        }catch(e : FirebaseAuthWeakPasswordException){
+        } catch (e: FirebaseAuthWeakPasswordException) {
             Toast.makeText(context, "Password too weak", Toast.LENGTH_SHORT).show()
-        }catch(e : FirebaseAuthInvalidCredentialsException){
+        } catch (e: FirebaseAuthInvalidCredentialsException) {
             Toast.makeText(context, "Email address is invalid", Toast.LENGTH_SHORT).show()
-        }catch(e : FirebaseAuthUserCollisionException){
-            Toast.makeText(context, "User with this email already exists", Toast.LENGTH_SHORT).show()
+        } catch (e: FirebaseAuthUserCollisionException) {
+            Toast.makeText(context, "User with this email already exists", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
-    suspend fun createAccount(email: String, password: String) : Boolean = withContext(Dispatchers.IO){
-        try{
-            val authResult = auth.createUserWithEmailAndPassword(email, password).await()
-            val user = authResult.user
+    suspend fun createAccount(email: String, password: String): Boolean =
+        withContext(Dispatchers.IO) {
+            try {
+                val authResult = auth.createUserWithEmailAndPassword(email, password).await()
+                val user = authResult.user
 
-            if(user != null){
-                writeNewUser(user.uid, email.removeRange(email.indexOf('@'), email.length), email)
-            }
-            true
-        }catch (e : Exception){
-            withContext(Dispatchers.Main) {
-                displayAuthenticationException(e)
-            }
-            false
-        }
-    }
-    private suspend fun writeNewUser(userId: String, name: String, email: String) : Boolean = withContext(Dispatchers.IO){
-        val user = Profile(userId = userId, name = name, email = email)
-        try{
-            database.child("users").child(userId).setValue(user).await()
-            val imageUri = Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
-            val returnedUri = writeUserProfilePicture(
-                imageUri,
-                compressionPercentage = 75,
-            )
-            if(returnedUri != null){
-                profile = Profile(returnedUri, userId,name,email)
+                if (user != null) {
+                    writeNewUser(
+                        user.uid,
+                        email.removeRange(email.indexOf('@'), email.length),
+                        email
+                    )
+                }
                 true
-            }else{
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    displayAuthenticationException(e)
+                }
                 false
             }
-        }catch(e : Exception){
-            false
         }
-    }
 
-    private fun getImageBitmap(imageUri: Uri) : Bitmap? {
+    private suspend fun writeNewUser(userId: String, name: String, email: String): Boolean =
+        withContext(Dispatchers.IO) {
+            val user = Profile(userId = userId, name = name, email = email)
+            try {
+                database.child("users").child(userId).setValue(user).await()
+                val imageUri =
+                    Uri.parse("android.resource://${context.packageName}/${R.drawable.logo}")
+                val returnedUri = writeUserProfilePicture(
+                    imageUri,
+                    compressionPercentage = 75,
+                )
+                if (returnedUri != null) {
+                    profile = Profile(returnedUri, userId, name, email)
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                false
+            }
+        }
+
+    private fun getImageBitmap(imageUri: Uri): Bitmap? {
         return try {
             when {
                 Build.VERSION.SDK_INT < 28 -> MediaStore.Images.Media.getBitmap(
                     context.contentResolver,
                     imageUri
                 )
+
                 else -> {
                     val source = ImageDecoder.createSource(context.contentResolver, imageUri)
                     ImageDecoder.decodeBitmap(source)
                 }
             }
-        }
-        catch (e : Exception){
+        } catch (e: Exception) {
             Log.e("BitmapError", "${e.message}")
             null
         }
     }
-    private fun getCurrentTime() : String{
+
+    private fun getCurrentTime(): String {
         return if (Build.VERSION.SDK_INT < 26) {
-            SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.getDefault()).format(Calendar.getInstance().time)
+            SimpleDateFormat(
+                "dd.MM.yyyy HH:mm",
+                Locale.getDefault()
+            ).format(Calendar.getInstance().time)
         } else {
             DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").format(LocalDateTime.now())
         }
 
     }
 
-    private fun compressImage(bitmap : Bitmap?, compressionPercentage : Int) : ByteArray {
+    private fun compressImage(bitmap: Bitmap?, compressionPercentage: Int): ByteArray {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap?.compress(Bitmap.CompressFormat.JPEG, 100 - compressionPercentage, byteArrayOutputStream)
+        bitmap?.compress(
+            Bitmap.CompressFormat.JPEG,
+            100 - compressionPercentage,
+            byteArrayOutputStream
+        )
         return byteArrayOutputStream.toByteArray()
     }
 
     suspend fun writeUserPost(
-        imageUri : Uri,
-        compressionPercentage : Int = 65,
-        description : String = ""
-    ) : Post? = withContext(Dispatchers.IO){
+        imageUri: Uri,
+        compressionPercentage: Int = 65,
+        description: String = ""
+    ): Post? = withContext(Dispatchers.IO) {
 
-        if(compressionPercentage < 0 || compressionPercentage > 100){
+        if (compressionPercentage < 0 || compressionPercentage > 100) {
             Log.e("CompressionError", "The compression percentage is out of bounds")
             return@withContext null
         }
         val bitmap = getImageBitmap(imageUri)
         val timestamp = getCurrentTime()
         val compressedImage = compressImage(bitmap, compressionPercentage)
-        if(bitmap == null){
+        if (bitmap == null) {
             return@withContext null
         }
 
         val uniqueUUID = UUID.randomUUID().toString()
         val storageRef = FirebaseStorage.getInstance().reference
-        .child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
+            .child(StringConstants.firebaseUserPicturesPath + auth.currentUser!!.uid + "/Posts/" + uniqueUUID + " " + timestamp)
 
-        try{
+        try {
             val result = storageRef.putBytes(compressedImage).await()
-            if(result != null){
-                val post = Post(description = description, userId = getCurrentUser()?.uid, uniqueUUID = uniqueUUID)
-                database.child("posts").child(getCurrentUser()!!.uid).child(uniqueUUID).setValue(post).await()
-                return@withContext post
+            if (result != null) {
+                val post = Post(
+                    description = description,
+                    userId = getCurrentUser()?.uid,
+                    uniqueUUID = uniqueUUID
+                )
+                database.child("posts").child(getCurrentUser()!!.uid).child(uniqueUUID)
+                    .setValue(post).await()
+                return@withContext post.copy(image = imageUri)
             }
-        }catch (e : Exception){
+        } catch (e: Exception) {
             return@withContext null
         }
         null
@@ -174,35 +198,37 @@ class EmailPasswordManager(
 
 
     suspend fun writeUserProfilePicture(
-        imageUri : Uri,
-        compressionPercentage : Int = 20,
-    ) : Uri? = withContext(Dispatchers.IO){
+        imageUri: Uri,
+        compressionPercentage: Int = 20,
+    ): Uri? = withContext(Dispatchers.IO) {
 
-        if(compressionPercentage < 0 || compressionPercentage > 100){
+        if (compressionPercentage < 0 || compressionPercentage > 100) {
             Log.e("CompressionError", "The compression percentage is out of bounds")
             return@withContext null
         }
         val bitmap = getImageBitmap(imageUri)
         val compressedImage = compressImage(bitmap, compressionPercentage)
-        if(bitmap == null){
+        if (bitmap == null) {
             return@withContext null
         }
 
         val storageRef = FirebaseStorage.getInstance().reference
-        .child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
+            .child(StringConstants.firebaseUserProfilePicturePath + auth.currentUser!!.uid)
 
-        try{
+        try {
             val result = storageRef.putBytes(compressedImage).await()
-            if(result != null){
+            if (result != null) {
                 return@withContext imageUri
             }
-        }catch (e : Exception){
+        } catch (e: Exception) {
             return@withContext null
         }
         null
     }
-    fun getUserImageUri(userId: String? ,callback: (Uri?) -> Unit) {
-        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserProfilePicturePath+userId)
+
+    fun getUserImageUri(userId: String?, callback: (Uri?) -> Unit) {
+        storage = FirebaseStorage.getInstance()
+            .getReference(StringConstants.firebaseUserProfilePicturePath + userId)
         val localFile = File.createTempFile("images", ".png")
         storage.getFile(localFile).addOnSuccessListener {
             callback(Uri.fromFile(localFile))
@@ -211,8 +237,24 @@ class EmailPasswordManager(
         }
     }
 
-    private fun fetchUserPosts(userId: String? ,callback: (List<Uri?>) -> Unit){
-        storage = FirebaseStorage.getInstance().getReference(StringConstants.firebaseUserPicturesPath+userId+"/Posts/")
+    private fun extractUniqueUUIDFromUri(uriString: String?): String? {
+        uriString?.let {
+            val decodedUriString = URLDecoder.decode(it, "UTF-8")
+            val uri = Uri.parse(decodedUriString)
+            val pathSegments = uri.pathSegments
+            val postsIndex = pathSegments.indexOf("Posts")
+            if (postsIndex != -1 && postsIndex + 1 < pathSegments.size) {
+                val uuidTimestampSegment = pathSegments[postsIndex + 1]
+                return uuidTimestampSegment.split(" ").firstOrNull()
+            }
+        }
+        return null
+    }
+
+    private fun fetchUserPosts(userId: String?, callback: (List<Post>) -> Unit) {
+
+        storage = FirebaseStorage.getInstance()
+            .getReference(StringConstants.firebaseUserPicturesPath + userId + "/Posts/")
         storage.listAll()
             .addOnSuccessListener { listResult ->
                 val itemsCount = listResult.items.size
@@ -220,31 +262,59 @@ class EmailPasswordManager(
                     callback(emptyList())
                 }
                 val urisWithTimestamps = mutableListOf<Pair<Long, Uri?>>()
+                val posts = mutableListOf<Post>()
+
                 listResult.items.forEach { item ->
                     item.downloadUrl
                         .addOnSuccessListener { uri ->
                             val timestamp = extractTimestampFromUri(uri)
                             urisWithTimestamps.add(timestamp to uri)
                             if (urisWithTimestamps.size == itemsCount) {
-                                val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
-                                callback(sortedUris)
+                                val sortedUris = urisWithTimestamps.sortedByDescending { it.first }
+                                    .map { it.second }
+                                database.child("posts").child(userId!!).get()
+                                    .addOnSuccessListener { dataSnapshot ->
+                                        sortedUris.forEach { sortedUri ->
+                                            for (snapshot in dataSnapshot.children) {
+                                                if (snapshot.key == extractUniqueUUIDFromUri(
+                                                        sortedUri.toString()
+                                                    )
+                                                ) {
+                                                    val post = snapshot.getValue(Post::class.java)
+                                                        ?.copy(image = sortedUri)
+                                                    post?.let {
+                                                        posts.add(it)
+                                                    }
+                                                    if (posts.size == sortedUris.size) {
+                                                        val sortedPosts =
+                                                            posts.sortedByDescending { it.datePosted }
+                                                        Log.i(
+                                                            "PostToString",
+                                                            sortedPosts.toString()
+                                                        )
+                                                        callback(sortedPosts)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                             }
-                    }
+                        }
                         .addOnFailureListener {
                             urisWithTimestamps.add(0L to null)
                             if (urisWithTimestamps.size == itemsCount) {
-                                val sortedUris = urisWithTimestamps.sortedByDescending { it.first }.map { it.second }
-                                callback(sortedUris)
+                                val sortedPosts = posts.sortedByDescending { it.datePosted }
+                                callback(sortedPosts)
                             }
-                    }
+                        }
                 }
             }
-            .addOnFailureListener{
+            .addOnFailureListener {
                 callback(emptyList())
             }
     }
 
-    private fun extractTimestampFromUri(uri : Uri) : Long{
+    private fun extractTimestampFromUri(uri: Uri): Long {
         val decodedFileName = URLDecoder.decode(uri.lastPathSegment, StandardCharsets.UTF_8.name())
 
         val regex = Regex("\\d{2}\\.\\d{2}\\.\\d{4} \\d{2}:\\d{2}")
@@ -256,7 +326,10 @@ class EmailPasswordManager(
             try {
                 dateFormat.parse(dateString)?.time ?: 0L
             } catch (e: Exception) {
-                Log.e("DateToLongParsingError", "Couldn't parse dateFormat inside extractTimestampFromUri")
+                Log.e(
+                    "DateToLongParsingError",
+                    "Couldn't parse dateFormat inside extractTimestampFromUri"
+                )
                 0L
             }
         } else {
@@ -278,7 +351,7 @@ class EmailPasswordManager(
                         if (uri != null) {
                             var updatedProfile = profile.copy(icon = uri)
                             fetchUserPosts(userId) { posts ->
-                                updatedProfile = updatedProfile.copy(listOfPictures = posts)
+                                updatedProfile = updatedProfile.copy(listOfPosts = posts)
                                 continuation.resume(updatedProfile)
                             }
                         } else {
@@ -291,6 +364,7 @@ class EmailPasswordManager(
             }
         }
     }
+
     suspend fun signIn(email: String, password: String): Boolean = withContext(Dispatchers.IO) {
         try {
             val authResult = auth.signInWithEmailAndPassword(email, password).await()
@@ -299,7 +373,7 @@ class EmailPasswordManager(
             if (user != null) {
                 val profile = parseUserToProfile(user.uid)
                 val allUsers = addAllUsers()
-
+                Log.i("AllUsersInfo", allUsers.toString())
                 if (profile != null) {
                     this@EmailPasswordManager.profile = profile.apply {
                         listOfFollowedProfiles = allUsers
@@ -313,13 +387,17 @@ class EmailPasswordManager(
             }
         } catch (e: Exception) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(context, "User either doesn't exist or the password is wrong", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "User either doesn't exist or the password is wrong",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
             false
         }
     }
 
-    private suspend fun addAllUsers() : List<Profile> = withContext(Dispatchers.IO) {
+    private suspend fun addAllUsers(): List<Profile> = withContext(Dispatchers.IO) {
         coroutineScope {
             val dataSnapshot = database.child("users").get().await()
             val deferredProfiles = dataSnapshot.children.mapNotNull { childSnapshot ->
@@ -333,17 +411,24 @@ class EmailPasswordManager(
         }
     }
 
-    fun resetPassword(email : String, onSuccess: () -> Unit){
+    fun resetPassword(email: String, onSuccess: () -> Unit) {
         auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener{
-                task ->
-                if(task.isSuccessful){
-                    Toast.makeText(context, "Successfully send password reset request to your email address", Toast.LENGTH_SHORT).show()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        context,
+                        "Successfully send password reset request to your email address",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     onSuccess()
                 }
             }
-            .addOnFailureListener{
-                Toast.makeText(context, "Failed sending password reset to email address", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener {
+                Toast.makeText(
+                    context,
+                    "Failed sending password reset to email address",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
     }
 

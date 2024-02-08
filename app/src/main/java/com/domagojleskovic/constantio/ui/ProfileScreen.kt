@@ -74,7 +74,7 @@ fun ProfileScreen(
             profilePictureUri = it
         }
     )
-    val listOfPictures by remember { mutableStateOf(profile?.listOfPictures ?: emptyList()) }
+    val listOfPosts by remember { mutableStateOf(profile?.listOfPosts ?: emptyList()) }
     var progressBarLoading by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
@@ -84,7 +84,7 @@ fun ProfileScreen(
         {
             onNavigateAddPostScreen(postPictureUri)
         }
-        Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPictures?.size}")
+        Log.i("ProfilePictureCount", "This profile currently has: ${profile?.listOfPosts?.size}")
     }
     LaunchedEffect(profilePictureUri) {
         if(profilePictureUri != profile?.icon){ // Otherwise will be called as soon as navigating to ProfileScreen
@@ -197,7 +197,7 @@ fun ProfileScreen(
                                         modifier = Modifier.padding(8.dp)
                                     )
                                     Text(
-                                        text = "Posts: ${profile?.listOfPictures?.size}",
+                                        text = "Posts: ${profile?.listOfPosts?.size}",
                                         fontSize = 20.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
@@ -277,7 +277,7 @@ fun ProfileScreen(
                     }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                if (listOfPictures.isEmpty()) {
+                if (listOfPosts.isEmpty()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -294,9 +294,9 @@ fun ProfileScreen(
                     }
                 }
                 else{
-                    EasyGrid(nColumns = 3, items = listOfPictures) { imageUri ->
+                    EasyGrid(nColumns = 3, items = listOfPosts) { post ->
                         AsyncImage(
-                            model = imageUri,
+                            model = post.image,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier

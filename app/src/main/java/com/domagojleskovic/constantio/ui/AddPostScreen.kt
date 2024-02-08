@@ -60,7 +60,7 @@ fun AddPostScreen(
     val profile = emailPasswordManager.profile
     val coroutineScope = rememberCoroutineScope()
 
-    var listOfPictures by remember { mutableStateOf(profile.listOfPictures) }
+    var listOfPosts by remember { mutableStateOf(profile.listOfPosts) }
 
     var isLoading by remember { mutableStateOf(false) }
 
@@ -125,7 +125,7 @@ fun AddPostScreen(
                         .border(2.dp, Brownish_Palette, CircleShape)
                 )
                 Text(
-                    text = "@Constantio", fontSize = 24.sp,
+                    text = "@${emailPasswordManager.profile.name}", fontSize = 24.sp,
                     fontFamily = FontFamily.Cursive,
                     fontWeight = FontWeight.W700,
                     color = Color.White,
@@ -177,8 +177,8 @@ fun AddPostScreen(
                                 imageUri = imageUri,
                                 description = descriptionEntered
                             ){
-                                listOfPictures = listOf(imageUri) + listOfPictures
-                                profile.listOfPictures = listOfPictures
+                                listOfPosts = listOf(it!!) + listOfPosts
+                                profile.listOfPosts = listOfPosts
                                 isLoading = false
                                 onAddPost()
                             }
@@ -200,14 +200,14 @@ private fun writePostToDatabase(
     emailPasswordManager : EmailPasswordManager,
     imageUri : Uri,
     description : String,
-    onSuccess : () -> Unit
+    onSuccess : (Post?) -> Unit
 ){
     coroutineScope.launch {
-        emailPasswordManager.writeUserPost(
+        val post = emailPasswordManager.writeUserPost(
             imageUri = imageUri,
             compressionPercentage = 65,
             description = description
         )
-        onSuccess()
+        onSuccess(post)
     }
 }

@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,7 +40,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.domagojleskovic.constantio.EmailPasswordManager
 import com.domagojleskovic.constantio.R
@@ -49,6 +47,7 @@ import com.domagojleskovic.constantio.ui.theme.Brownish_Palette
 import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 import com.domagojleskovic.constantio.ui.theme.LightRed_Palette
 import com.google.firebase.database.IgnoreExtraProperties
+import java.util.Date
 
 @IgnoreExtraProperties
 data class Profile(
@@ -56,7 +55,7 @@ data class Profile(
     val userId : String? = null,
     var name : String? = null,
     var email : String? = null,
-    var listOfPictures : List<Uri?> = listOf(),
+    var listOfPosts : List<Post> = listOf(),
     var listOfStories : List<Int> = listOf(),
     var listOfFollowedProfiles : List<Profile> = listOf()
 ){
@@ -74,7 +73,11 @@ data class Post(
     val userId: String? = null,
     val uniqueUUID : String? = null,
     var datePosted : Long = System.currentTimeMillis()
-)
+){
+    override fun toString(): String {
+        return "Image: $image\n Desc: $description \n DatePosted: ${Date(datePosted)}"
+    }
+}
 
 /*
 val listOfProfiles = mutableListOf<Profile>(
@@ -114,6 +117,15 @@ fun MainScreen(
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
     val scrollState = rememberLazyListState()
+
+    var showActivity by remember { mutableStateOf(true)}
+    profile!!.listOfFollowedProfiles.forEach{followedProfile ->
+        if(followedProfile.listOfPosts.isNotEmpty()){
+            showActivity = false
+            return@forEach
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -200,8 +212,7 @@ fun MainScreen(
                     }
                 }
             }
-            if(profile!!.listOfFollowedProfiles.isEmpty())
-            {
+            if(showActivity){
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -217,24 +228,14 @@ fun MainScreen(
         items(listOfFollowedProfiles) { followedProfile ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(8.dp)
             ) {
-                followedProfile.listOfPictures.forEach { imageUri ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(350.dp)
-                            .padding(top = 16.dp, start = 16.dp, end = 16.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        AsyncImage(
-                            model = imageUri,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(8.dp))
-                        )
-                    }
+                followedProfile.listOfPosts.forEach { post ->
+                    Post(
+                        profile = followedProfile,
+                        post = post,
+                    )
                 }
             }
         }
