@@ -2,6 +2,7 @@ package com.domagojleskovic.constantio.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,13 +49,13 @@ import com.domagojleskovic.constantio.ui.theme.DarkBlue_Palette
 @Preview(showBackground = true)
 @Composable
 fun SearchScreenPreview() {
-    SearchScreen()
+    //SearchScreen()
 }
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    onNavigateAddPostScreen : (String?) -> Unit,
     viewModel: SearchViewModel = viewModel(),
 ) {
     var searchText by remember { mutableStateOf("") }
@@ -65,7 +66,6 @@ fun SearchScreen(
             viewModel.clearSearchResults()
         }
     }
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -143,7 +143,10 @@ fun SearchScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(8.dp)
+                        .clickable {
+                            onNavigateAddPostScreen(profile.userId)
+                        },
                     horizontalArrangement = Arrangement.Start,
                 ){
                     AsyncImage(

@@ -92,6 +92,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("search_screen"){
                             SearchScreen(
+                                onNavigateAddPostScreen = { userId->
+                                    navController.navigate("profile/$userId")
+                                },
                                 viewModel = searchViewModel
                             )
                         }

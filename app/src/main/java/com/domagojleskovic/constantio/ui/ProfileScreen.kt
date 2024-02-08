@@ -75,9 +75,7 @@ fun ProfileScreen(
             listOfPosts = profile!!.listOfPosts
         }
     }
-
-    val name = profile?.name ?: "Default Name" // Provides a default name if null
-
+    val name = profile?.name ?: "Default Name"
     var postPictureUri by remember {
         mutableStateOf<Uri?>(null)
     }
