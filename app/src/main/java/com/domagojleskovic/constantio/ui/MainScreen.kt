@@ -2,6 +2,7 @@ package com.domagojleskovic.constantio.ui
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,11 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,14 +106,19 @@ fun MainScreen(
     var profile by remember { mutableStateOf<Profile?>(null) }
     profile = emailPasswordManager.profile
     val scrollState = rememberLazyListState()
-
-    var showActivity by remember { mutableStateOf(true)}
-    //profile!!.listOfFollowedProfiles.forEach{followedProfile ->
-    //    if(followedProfile.listOfPosts.isNotEmpty()){
-    //        showActivity = false
-    //        return@forEach
-    //    }
-    //}
+    var showActivity by remember { mutableStateOf(false)}
+    LaunchedEffect(Unit){
+        val followedProfiles = emailPasswordManager.getFollowedProfiles()
+        Log.i("FollowedProfiles",   followedProfiles.toString())
+        var noActivity = true
+        followedProfiles.forEach{followedProfile ->
+            if(followedProfile.listOfPosts.isNotEmpty()){
+                noActivity = false
+                return@forEach
+            }
+        }
+        showActivity = noActivity
+    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -206,21 +214,21 @@ fun MainScreen(
                 }
             }
         }
-        val listOfFollowedProfiles = profile!!.listOfFollowedProfiles
-        //items(listOfFollowedProfiles) { followedProfile ->
-        //    followedProfile.listOfPosts.forEach { post ->
-        //        Column(
-        //            modifier = Modifier.padding(8.dp)
-        //        ) {
-        //            Post(
-        //                onNavigateProfileScreen = { onNavigateProfileScreen(it) },
-        //                profile = followedProfile,
-        //                post = post
-        //            )
-        //        }
-        //        Spacer(modifier = Modifier.height(16.dp))
-        //    }
-        //}
+        val listOfFollowedProfiles = emailPasswordManager.followedProfiles
+        items(listOfFollowedProfiles) { followedProfile ->
+            followedProfile.listOfPosts.forEach { post ->
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Post(
+                        onNavigateProfileScreen = { onNavigateProfileScreen(it) },
+                        profile = followedProfile,
+                        post = post
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
     }
 }
 

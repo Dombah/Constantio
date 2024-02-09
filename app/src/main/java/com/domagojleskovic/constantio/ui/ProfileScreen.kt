@@ -242,10 +242,20 @@ fun ProfileScreen(
                                             if(!isFollowing.value){
                                                 emailPasswordManager.followProfile(profile?.userId){
                                                     isFollowing.value = true
+                                                    coroutineScope.launch {
+                                                        progressBarLoading = true
+                                                        emailPasswordManager.followedProfiles = emailPasswordManager.getFollowedProfiles()
+                                                        progressBarLoading = false
+                                                    }
                                                 }
                                             }else{
                                                 emailPasswordManager.unfollowProfile(profile?.userId){
                                                     isFollowing.value = false
+                                                    coroutineScope.launch {
+                                                        progressBarLoading = true
+                                                        emailPasswordManager.followedProfiles = emailPasswordManager.getFollowedProfiles()
+                                                        progressBarLoading = false
+                                                    }
                                                 }
                                             }
                                         },

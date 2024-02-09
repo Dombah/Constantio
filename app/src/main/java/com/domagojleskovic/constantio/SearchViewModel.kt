@@ -10,13 +10,11 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import okhttp3.internal.wait
 
 class SearchViewModel(
     val emailPasswordManager: EmailPasswordManager
@@ -34,7 +32,7 @@ class SearchViewModel(
         searchJob?.cancel()
         clearSearchResults()
         searchJob = viewModelScope.launch {
-            delay(300)
+            delay(100)
             if (query.isNotEmpty()) {
                 val filteredQuery = queryRef
                     .orderByChild("name")

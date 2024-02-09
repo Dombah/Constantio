@@ -50,6 +50,7 @@ class EmailPasswordManager(
     private val database: DatabaseReference = Firebase.database.reference
     private lateinit var storage: StorageReference
     lateinit var profile: Profile
+    var followedProfiles = listOf<Profile>()
 
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
@@ -288,10 +289,6 @@ class EmailPasswordManager(
                                                     if (posts.size == sortedUris.size) {
                                                         val sortedPosts =
                                                             posts.sortedByDescending { it.datePosted }
-                                                        Log.i(
-                                                            "PostToString",
-                                                            sortedPosts.toString()
-                                                        )
                                                         callback(sortedPosts)
                                                     }
                                                 }
@@ -372,12 +369,12 @@ class EmailPasswordManager(
 
             if (user != null) {
                 val profile = parseUserToProfile(user.uid)
-                val allUsers = addAllUsers()
-                Log.i("AllUsersInfo", allUsers.toString())
+                //val allUsers = addAllUsers()
                 if (profile != null) {
                     this@EmailPasswordManager.profile = profile.apply {
-                        //listOfFollowedProfiles = allUsers
+
                     }
+                    followedProfiles = getFollowedProfiles()
                     true
                 } else {
                     false
@@ -397,6 +394,22 @@ class EmailPasswordManager(
         }
     }
 
+    suspend fun getFollowedProfiles(): List<Profile> = withContext(Dispatchers.IO) {
+        coroutineScope {
+            val currentUser = getCurrentUser()
+            if (currentUser != null) {
+                val dataSnapshot = database.child("users").child(currentUser.uid).child("listOfFollowedProfiles").get().await()
+                val userIds = dataSnapshot.children.mapNotNull { it.value as String? }
+                Log.i("UserIds", userIds.toString())
+                val deferredProfiles = userIds.map { userId ->
+                    async { parseUserToProfile(userId) }
+                }
+                deferredProfiles.awaitAll().filterNotNull()
+            } else {
+                emptyList()
+            }
+        }
+    }
     private suspend fun addAllUsers(): List<Profile> = withContext(Dispatchers.IO) {
         coroutineScope {
             val dataSnapshot = database.child("users").get().await()
@@ -416,8 +429,7 @@ class EmailPasswordManager(
         val currentUser = getCurrentUser()
         if (currentUser != null && userId != null && !profile.listOfFollowedProfiles.contains(userId)) {
             val updatedList = profile.listOfFollowedProfiles + userId
-            profile.listOfFollowedProfiles = updatedList.distinct() // Ensure uniqueness
-
+            profile.listOfFollowedProfiles = updatedList.distinct()
             database.child("users").child(currentUser.uid).child("listOfFollowedProfiles").setValue(updatedList)
                 .addOnSuccessListener {
                     onSuccess(true)
@@ -435,9 +447,9 @@ class EmailPasswordManager(
         if (currentUser != null && userId != null && profile.listOfFollowedProfiles.contains(userId)) {
             val updatedList = profile.listOfFollowedProfiles - userId
             profile.listOfFollowedProfiles = updatedList.distinct()
-
             database.child("users").child(currentUser.uid).child("listOfFollowedProfiles").setValue(updatedList)
                 .addOnSuccessListener {
+                    followedProfiles.filterNot { it.userId == userId }
                     onSuccess(true)
                 }
                 .addOnFailureListener {
