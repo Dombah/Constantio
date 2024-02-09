@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
@@ -55,8 +54,7 @@ data class Profile(
     var name : String? = null,
     var email : String? = null,
     var listOfPosts : List<Post> = listOf(),
-    var listOfStories : List<Int> = listOf(),
-    var listOfFollowedProfiles : List<Profile> = listOf()
+    var listOfFollowedProfiles : List<String?> = listOf()
 ){
     override fun toString(): String {
         return if(name == null)
@@ -107,12 +105,12 @@ fun MainScreen(
     val scrollState = rememberLazyListState()
 
     var showActivity by remember { mutableStateOf(true)}
-    profile!!.listOfFollowedProfiles.forEach{followedProfile ->
-        if(followedProfile.listOfPosts.isNotEmpty()){
-            showActivity = false
-            return@forEach
-        }
-    }
+    //profile!!.listOfFollowedProfiles.forEach{followedProfile ->
+    //    if(followedProfile.listOfPosts.isNotEmpty()){
+    //        showActivity = false
+    //        return@forEach
+    //    }
+    //}
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -209,20 +207,20 @@ fun MainScreen(
             }
         }
         val listOfFollowedProfiles = profile!!.listOfFollowedProfiles
-        items(listOfFollowedProfiles) { followedProfile ->
-            followedProfile.listOfPosts.forEach { post ->
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Post(
-                        onNavigateProfileScreen = { onNavigateProfileScreen(it) },
-                        profile = followedProfile,
-                        post = post
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-        }
+        //items(listOfFollowedProfiles) { followedProfile ->
+        //    followedProfile.listOfPosts.forEach { post ->
+        //        Column(
+        //            modifier = Modifier.padding(8.dp)
+        //        ) {
+        //            Post(
+        //                onNavigateProfileScreen = { onNavigateProfileScreen(it) },
+        //                profile = followedProfile,
+        //                post = post
+        //            )
+        //        }
+        //        Spacer(modifier = Modifier.height(16.dp))
+        //    }
+        //}
     }
 }
 

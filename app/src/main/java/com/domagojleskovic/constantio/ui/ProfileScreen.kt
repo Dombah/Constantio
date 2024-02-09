@@ -60,6 +60,7 @@ fun ProfileScreen(
 
     var profile by remember { mutableStateOf<Profile?>(null) }
     var listOfPosts by remember { mutableStateOf(profile?.listOfPosts ?: emptyList()) }
+    var isFollowing = mutableStateOf(emailPasswordManager.profile.listOfFollowedProfiles.contains(profile?.userId))
     val isUserProfileOwner = userId == emailPasswordManager.getCurrentUser()?.uid
     if(isUserProfileOwner){
         profile = emailPasswordManager.profile
@@ -73,6 +74,7 @@ fun ProfileScreen(
             }.await()
             progressBarLoading = false
             listOfPosts = profile!!.listOfPosts
+            isFollowing = mutableStateOf(emailPasswordManager.profile.listOfFollowedProfiles.contains(profile?.userId))
         }
     }
     val name = profile?.name ?: "Default Name"
@@ -206,7 +208,7 @@ fun ProfileScreen(
                                     modifier = Modifier.padding(16.dp)
                                 ) {
                                     Text(
-                                        text = name, fontSize = 28.sp,
+                                        text = "@$name", fontSize = 28.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
                                         color = Color.White,
@@ -215,13 +217,6 @@ fun ProfileScreen(
                                     Text(
                                         text = "Posts: ${profile?.listOfPosts?.size}",
                                         fontSize = 20.sp,
-                                        fontFamily = FontFamily.Cursive,
-                                        fontWeight = FontWeight.W700,
-                                        color = Color.White,
-                                        modifier = Modifier.padding(8.dp)
-                                    )
-                                    Text(
-                                        text = "Followers: 0", fontSize = 20.sp,
                                         fontFamily = FontFamily.Cursive,
                                         fontWeight = FontWeight.W700,
                                         color = Color.White,
@@ -243,12 +238,26 @@ fun ProfileScreen(
                             ) {
                                 if (!isUserProfileOwner) {
                                     Button(
-                                        onClick = { /*TODO*/ },
+                                        onClick = {
+                                            if(!isFollowing.value){
+                                                emailPasswordManager.followProfile(profile?.userId){
+                                                    isFollowing.value = true
+                                                }
+                                            }else{
+                                                emailPasswordManager.unfollowProfile(profile?.userId){
+                                                    isFollowing.value = false
+                                                }
+                                            }
+                                        },
                                         colors = ButtonDefaults.buttonColors(
                                             containerColor = LightRed_Palette
                                         )
                                     ) {
-                                        Text(text = "Follow")
+                                        if(!isFollowing.value){
+                                            Text("Follow")
+                                        }else{
+                                            Text(text = "Following")
+                                        }
                                     }
                                     Spacer(modifier = Modifier.padding(8.dp))
                                 } else {

@@ -226,7 +226,7 @@ class EmailPasswordManager(
         null
     }
 
-    fun getUserImageUri(userId: String?, callback: (Uri?) -> Unit) {
+    private fun getUserImageUri(userId: String?, callback: (Uri?) -> Unit) {
         storage = FirebaseStorage.getInstance()
             .getReference(StringConstants.firebaseUserProfilePicturePath + userId)
         val localFile = File.createTempFile("images", ".png")
@@ -376,7 +376,7 @@ class EmailPasswordManager(
                 Log.i("AllUsersInfo", allUsers.toString())
                 if (profile != null) {
                     this@EmailPasswordManager.profile = profile.apply {
-                        listOfFollowedProfiles = allUsers
+                        //listOfFollowedProfiles = allUsers
                     }
                     true
                 } else {
@@ -408,6 +408,43 @@ class EmailPasswordManager(
                 } else null
             }
             deferredProfiles.awaitAll().filterNotNull()
+        }
+    }
+
+    fun followProfile(userId: String?, onSuccess: (Boolean) -> Unit){
+
+        val currentUser = getCurrentUser()
+        if (currentUser != null && userId != null && !profile.listOfFollowedProfiles.contains(userId)) {
+            val updatedList = profile.listOfFollowedProfiles + userId
+            profile.listOfFollowedProfiles = updatedList.distinct() // Ensure uniqueness
+
+            database.child("users").child(currentUser.uid).child("listOfFollowedProfiles").setValue(updatedList)
+                .addOnSuccessListener {
+                    onSuccess(true)
+                }
+                .addOnFailureListener {
+                    onSuccess(false)
+                }
+        } else {
+            onSuccess(false)
+        }
+    }
+    fun unfollowProfile(userId: String?, onSuccess: (Boolean) -> Unit){
+
+        val currentUser = getCurrentUser()
+        if (currentUser != null && userId != null && profile.listOfFollowedProfiles.contains(userId)) {
+            val updatedList = profile.listOfFollowedProfiles - userId
+            profile.listOfFollowedProfiles = updatedList.distinct()
+
+            database.child("users").child(currentUser.uid).child("listOfFollowedProfiles").setValue(updatedList)
+                .addOnSuccessListener {
+                    onSuccess(true)
+                }
+                .addOnFailureListener {
+                    onSuccess(false)
+                }
+        } else {
+            onSuccess(false)
         }
     }
 
